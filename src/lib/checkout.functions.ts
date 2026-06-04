@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
@@ -59,14 +60,15 @@ export const createCheckout = createServerFn({ method: "POST" })
     const categoryCode: string = tp.category_code ?? "";
     const sandbox: boolean = tp.sandbox !== false;
 
+    const req = getRequest();
+    const url = new URL(req?.url ?? "http://localhost");
+    const origin = req?.headers.get("origin") || req?.headers.get("referer")?.replace(/\/$/, "") || `${url.protocol}//${url.host}`;
+
     if (!userSecretKey || !categoryCode) {
-      // No payment gateway configured — return a dev fallback that marks order pending and goes to thank-you
-      const origin = process.env.SITE_URL || "";
       return { url: `${origin}/thank-you?order=${order.id}&unpaid=1`, orderId: order.id };
     }
 
     const base = sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com";
-    const origin = process.env.SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
 
     const form = new URLSearchParams({
       userSecretKey,

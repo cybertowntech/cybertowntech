@@ -23,10 +23,16 @@ function AdminKeys() {
   const { data: keys = [], isLoading } = useQuery({
     queryKey: ["admin-keys", productId],
     queryFn: async () => {
-      let q = supabase.from("license_keys").select("*,products(name),profiles!license_keys_assigned_to_fkey(email)").order("created_at", { ascending: false });
+      let q = supabase.from("license_keys").select("*,products(name)").order("created_at", { ascending: false });
       if (productId !== "all") q = q.eq("product_id", productId);
       const { data } = await q;
-      return data ?? [];
+      const userIds = Array.from(new Set((data ?? []).map((k: any) => k.assigned_to).filter(Boolean)));
+      let emailMap: Record<string, string> = {};
+      if (userIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id,email").in("id", userIds);
+        emailMap = Object.fromEntries((profs ?? []).map((p) => [p.id, p.email]));
+      }
+      return (data ?? []).map((k: any) => ({ ...k, assigned_email: k.assigned_to ? emailMap[k.assigned_to] : null }));
     },
   });
 
@@ -40,7 +46,7 @@ function AdminKeys() {
 
   function exportCsv() {
     const rows = [["key", "status", "product", "assigned_to", "assigned_at"]];
-    keys.forEach((k: any) => rows.push([k.key_value, k.status, k.products?.name ?? "", k.profiles?.email ?? "", k.assigned_at ?? ""]));
+    keys.forEach((k: any) => rows.push([k.key_value, k.status, k.products?.name ?? "", k.assigned_email ?? "", k.assigned_at ?? ""]));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -82,7 +88,7 @@ function AdminKeys() {
                 <td className="p-3 font-mono text-xs text-stone truncate max-w-[200px]">{k.key_value}</td>
                 <td className="p-3">{k.products?.name}</td>
                 <td className="p-3"><span className="text-xs px-2 py-0.5 rounded-full border border-border">{k.status}</span></td>
-                <td className="p-3 text-muted-foreground truncate max-w-[180px]">{k.profiles?.email ?? "—"}</td>
+                <td className="p-3 text-muted-foreground truncate max-w-[180px]">{k.assigned_email ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{k.assigned_at ? formatDate(k.assigned_at) : "—"}</td>
               </tr>
             ))}
