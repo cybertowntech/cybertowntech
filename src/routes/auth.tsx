@@ -8,7 +8,9 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import logo from "@/assets/logo.jpg";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({ mode: (s.mode as string) === "register" ? "register" : "login" }),
+  validateSearch: (s: Record<string, unknown>): { mode?: "login" | "register" } => ({
+    mode: s.mode === "register" ? "register" : s.mode === "login" ? "login" : undefined,
+  }),
   head: () => ({ meta: [{ title: "Sign in — CyberTown Store" }] }),
   component: AuthPage,
 });
