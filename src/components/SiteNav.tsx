@@ -24,7 +24,7 @@ export default function SiteNav({ transparent = false }: { transparent?: boolean
         <Link to="/" className="flex items-center gap-3 group">
           <img src={logo} alt="CyberTown" className="w-9 h-9 rounded-full ring-1 ring-stone/40 group-hover:ring-stone transition" />
           <span className="font-display font-semibold tracking-tight text-cream">
-            CyberTown<span className="text-stone"> · Store</span>
+            CyberTown<span className="text-stone"> · Tech</span>
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-8 text-sm text-ash/80">

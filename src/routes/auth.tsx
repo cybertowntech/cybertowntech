@@ -11,7 +11,7 @@ export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>): { mode?: "login" | "register" } => ({
     mode: s.mode === "register" ? "register" : s.mode === "login" ? "login" : undefined,
   }),
-  head: () => ({ meta: [{ title: "Sign in — CyberTown Store" }] }),
+  head: () => ({ meta: [{ title: "Sign in — CyberTown Tech" }] }),
   component: AuthPage,
 });
 
@@ -69,7 +69,7 @@ function AuthPage() {
         <div className="text-center mb-8">
           <img src={logo} alt="CyberTown" className="w-14 h-14 rounded-full mx-auto ring-1 ring-stone/40 mb-4" />
           <h1 className="text-3xl font-display font-semibold tracking-tight">{isRegister ? "Create account" : "Welcome back"}</h1>
-          <p className="text-sm text-muted-foreground mt-2">{isRegister ? "Join CyberTown Store" : "Sign in to your dashboard"}</p>
+          <p className="text-sm text-muted-foreground mt-2">{isRegister ? "Join CyberTown Tech" : "Sign in to your dashboard"}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-7 space-y-4">
           <button onClick={handleGoogle} disabled={loading} className="w-full h-11 rounded-lg border border-border hover:border-stone bg-obsidian text-cream text-sm font-medium flex items-center justify-center gap-3 transition disabled:opacity-50">

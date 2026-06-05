@@ -10,8 +10,8 @@ import { formatMYR } from "@/lib/format";
 export const Route = createFileRoute("/products")({
   head: () => ({
     meta: [
-      { title: "Products — CyberTown Store" },
-      { name: "description", content: "Browse digital goods and web development services from CyberTown Store Malaysia." },
+      { title: "Products — CyberTown Tech" },
+      { name: "description", content: "Browse digital goods and web development services from CyberTown Tech Malaysia." },
     ],
   }),
   component: ProductsPage,

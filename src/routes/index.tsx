@@ -9,9 +9,9 @@ import { Services, ProductsPreview, WhyUs, Testimonials, ContactCTA, SiteFooter 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "CyberTown Store — Digital Goods & Web Solutions · Malaysia" },
-      { name: "description", content: "CyberTown Store: Malaysian digital goods, license keys, and custom web development services. Instant delivery, secure payments." },
-      { property: "og:title", content: "CyberTown Store — Digital Goods & Web Solutions" },
+      { title: "CyberTown Tech — Digital Goods & Web Solutions · Malaysia" },
+      { name: "description", content: "CyberTown Tech: Malaysian digital goods, license keys, and custom web development services. Instant delivery, secure payments." },
+      { property: "og:title", content: "CyberTown Tech — Digital Goods & Web Solutions" },
       { property: "og:description", content: "Premium digital goods and web development from Malaysia." },
     ],
   }),
@@ -43,7 +43,7 @@ function Home() {
           </motion.div>
 
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-display font-semibold tracking-tighter text-cream text-glow glitch">
-            <Typewriter text="CyberTown Store" speed={75} />
+            <Typewriter text="CyberTown Tech" speed={75} />
           </h1>
 
           <motion.p

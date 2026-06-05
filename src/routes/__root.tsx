@@ -51,11 +51,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "CyberTown Store" },
+      { title: "CyberTown Tech" },
       { name: "description", content: "Digital goods and web development services from Malaysia." },
-      { name: "author", content: "CyberTown Store" },
+      { name: "author", content: "CyberTown Tech" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "CyberTown Store" },
+      { property: "og:site_name", content: "CyberTown Tech" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
