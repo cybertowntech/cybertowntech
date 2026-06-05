@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMYR } from "@/lib/format";
-import { Plus, Edit, Trash2, X, Search } from "lucide-react";
+import { Plus, Edit, Trash2, X, Search, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
@@ -97,12 +97,11 @@ function ProductFormModal({ initial, onClose, onSaved }: { initial: Product | nu
   const [variants, setVariants] = useState<{ id?: string; name: string; price: number }[]>([]);
   const [busy, setBusy] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     if (initial?.id) {
       supabase.from("product_variants").select("*").eq("product_id", initial.id).then(({ data }) => setVariants((data ?? []).map(v => ({ id: v.id, name: v.name, price: Number(v.price) }))));
     }
-    return undefined;
-  });
+  }, [initial?.id]);
 
   async function save() {
     setBusy(true);
@@ -149,10 +148,8 @@ function ProductFormModal({ initial, onClose, onSaved }: { initial: Product | nu
         <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-2">
           <Field label="Name"><input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls} /></Field>
           <Field label="Description"><textarea rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} className={inputCls} /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Category"><input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} className={inputCls} /></Field>
-            <Field label="Thumbnail URL"><input value={f.thumbnail_url} onChange={(e) => setF({ ...f, thumbnail_url: e.target.value })} className={inputCls} /></Field>
-          </div>
+          <Field label="Category"><input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} className={inputCls} /></Field>
+          <Field label="Thumbnail"><ThumbnailUploader value={f.thumbnail_url} onChange={(url) => setF({ ...f, thumbnail_url: url })} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Type">
               <select value={f.type} onChange={(e) => setF({ ...f, type: e.target.value as any })} className={inputCls}>
@@ -194,4 +191,39 @@ function ProductFormModal({ initial, onClose, onSaved }: { initial: Product | nu
 const inputCls = "w-full h-10 px-3 rounded-lg bg-obsidian border border-border outline-none focus:border-stone text-sm";
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className="text-xs uppercase tracking-widest text-stone mb-1.5 block">{label}</label>{children}</div>;
+}
+
+function ThumbnailUploader({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("product-thumbnails").upload(path, file, { cacheControl: "31536000", upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("product-thumbnails").getPublicUrl(path);
+      onChange(data.publicUrl);
+      toast.success("Uploaded");
+    } catch (e: any) { toast.error(e.message); }
+    finally { setBusy(false); }
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-20 h-20 rounded-lg bg-obsidian border border-border overflow-hidden flex items-center justify-center shrink-0">
+        {value ? <img src={value} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-stone/50" />}
+      </div>
+      <div className="flex-1 space-y-2">
+        <input ref={inputRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
+        <button type="button" onClick={() => inputRef.current?.click()} disabled={busy} className="inline-flex items-center gap-2 px-3 h-9 rounded-lg border border-border text-xs hover:bg-muted disabled:opacity-50">
+          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+          {busy ? "Uploading…" : value ? "Replace image" : "Upload image"}
+        </button>
+        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="…or paste image URL" className={`${inputCls} text-xs`} />
+      </div>
+    </div>
+  );
 }
