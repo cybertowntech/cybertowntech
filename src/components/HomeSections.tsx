@@ -240,7 +240,7 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-border/60 py-12 px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <div className="font-mono">© {new Date().getFullYear()} CyberTown Store · Made in Malaysia 🇲🇾</div>
+        <div className="font-mono">© {new Date().getFullYear()} CyberTown Tech · Made in Malaysia 🇲🇾</div>
         <div className="flex gap-6">
           <a href="#" className="hover:text-cream transition">Privacy</a>
           <a href="#" className="hover:text-cream transition">Terms</a>
