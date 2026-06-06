@@ -129,10 +129,17 @@ function ProductDetail() {
               </p>
             )}
 
-            <button onClick={handleBuy} disabled={busy || outOfStock} className="mt-8 w-full h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
-            </button>
+            <div className="mt-8 grid sm:grid-cols-2 gap-3">
+              <button onClick={handleBuy} disabled={busy || outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
+              </button>
+              {!isService && !outOfStock && (
+                <button onClick={handleAddToCart} className="h-12 rounded-lg border border-border hover:border-stone text-cream font-medium transition flex items-center justify-center gap-2">
+                  <ShoppingCart className="w-4 h-4" /> Add to Cart
+                </button>
+              )}
+            </div>
 
             <div className="mt-6 flex flex-wrap gap-3 text-xs text-muted-foreground">
               <div className="inline-flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-stone" /> Secure ToyyibPay</div>
