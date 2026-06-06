@@ -2,13 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Package, ShieldCheck, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, Package, ShieldCheck, Zap, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { createCheckout } from "@/lib/checkout.functions";
+import { useCart } from "@/context/CartContext";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -18,6 +19,7 @@ function ProductDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { add } = useCart();
   const [variantId, setVariantId] = useState<string | "base">("base");
   const [busy, setBusy] = useState(false);
 
