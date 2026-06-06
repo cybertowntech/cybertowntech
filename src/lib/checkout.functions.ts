@@ -36,9 +36,16 @@ export const createCheckout = createServerFn({ method: "POST" })
       if (!count || count < 1) return { error: "Out of stock" };
     }
 
-    const email = String(claims.email ?? "");
+    const claimEmail = String((claims as any).email ?? "").trim();
     const { data: profile } = await supabaseAdmin
-      .from("profiles").select("full_name,phone").eq("id", userId).maybeSingle();
+      .from("profiles").select("full_name,phone,email").eq("id", userId).maybeSingle();
+
+    const email = claimEmail || (profile?.email ?? "").trim();
+    if (!email) return { error: "Your account has no email. Please update your profile." };
+
+    const name = (profile?.full_name?.trim() || email.split("@")[0] || "Customer").slice(0, 50);
+    const rawPhone = (profile?.phone ?? "").replace(/\D/g, "");
+    const phone = rawPhone.length >= 9 ? rawPhone : "60123456789";
 
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders").insert({
@@ -48,24 +55,29 @@ export const createCheckout = createServerFn({ method: "POST" })
         amount,
         status: "pending",
         customer_email: email,
-        customer_name: profile?.full_name ?? email.split("@")[0],
-        customer_phone: profile?.phone ?? null,
+        customer_name: name,
+        customer_phone: phone,
       }).select("*").single();
     if (oErr || !order) return { error: oErr?.message ?? "Failed to create order" };
 
     const { data: settings } = await supabaseAdmin
       .from("settings").select("value").eq("key", "toyyibpay").maybeSingle();
     const tp = (settings?.value as any) ?? {};
-    const userSecretKey: string = tp.user_secret_key ?? "";
-    const categoryCode: string = tp.category_code ?? "";
-    const sandbox: boolean = tp.sandbox !== false;
+    const userSecretKey: string = (tp.user_secret_key ?? "").trim();
+    const categoryCode: string = (tp.category_code ?? "").trim();
+    const sandbox: boolean = tp.sandbox === true;
 
     const req = getRequest();
     const url = new URL(req?.url ?? "http://localhost");
-    const origin = req?.headers.get("origin") || req?.headers.get("referer")?.replace(/\/$/, "") || `${url.protocol}//${url.host}`;
+    const headerOrigin = req?.headers.get("origin") || req?.headers.get("referer");
+    let origin = `${url.protocol}//${url.host}`;
+    if (headerOrigin) {
+      try { origin = new URL(headerOrigin).origin; } catch {}
+    }
 
     if (!userSecretKey || !categoryCode) {
-      return { url: `${origin}/thank-you?order=${order.id}&unpaid=1`, orderId: order.id };
+      console.error("[checkout] ToyyibPay not configured");
+      return { error: "Payment is not configured. Please contact support." };
     }
 
     const base = sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com";
@@ -74,30 +86,42 @@ export const createCheckout = createServerFn({ method: "POST" })
       userSecretKey,
       categoryCode,
       billName: product.name.slice(0, 30),
-      billDescription: `${product.name}${variantName ? ` — ${variantName}` : ""}`.slice(0, 100),
+      billDescription: `${product.name}${variantName ? ` - ${variantName}` : ""}`.slice(0, 100),
       billPriceSetting: "1",
       billPayorInfo: "1",
       billAmount: String(Math.round(amount * 100)),
       billReturnUrl: `${origin}/thank-you?order=${order.id}`,
       billCallbackUrl: `${origin}/api/public/toyyibpay-callback`,
       billExternalReferenceNo: order.id,
-      billTo: order.customer_name ?? "Customer",
+      billTo: name,
       billEmail: email,
-      billPhone: order.customer_phone ?? "0000000000",
+      billPhone: phone,
     });
 
-    const resp = await fetch(`${base}/index.php/api/createBill`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: form.toString(),
-    });
-    const txt = await resp.text();
+    console.log("[checkout] Creating ToyyibPay bill", { base, orderId: order.id, amount, email });
+
+    let txt = "";
+    try {
+      const resp = await fetch(`${base}/index.php/api/createBill`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: form.toString(),
+      });
+      txt = await resp.text();
+    } catch (e: any) {
+      console.error("[checkout] ToyyibPay fetch failed", e?.message);
+      return { error: "Could not reach payment gateway. Try again." };
+    }
+
     let billCode: string | null = null;
     try {
       const json = JSON.parse(txt);
       if (Array.isArray(json) && json[0]?.BillCode) billCode = json[0].BillCode;
     } catch {}
-    if (!billCode) return { error: "ToyyibPay error: " + txt.slice(0, 200) };
+    if (!billCode) {
+      console.error("[checkout] ToyyibPay error response:", txt);
+      return { error: "Payment gateway error: " + txt.replace(/\s+/g, " ").slice(0, 200) };
+    }
 
     await supabaseAdmin.from("orders").update({ toyyibpay_bill_code: billCode }).eq("id", order.id);
     return { url: `${base}/${billCode}`, orderId: order.id };
