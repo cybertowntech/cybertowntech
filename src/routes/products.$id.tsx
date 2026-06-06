@@ -51,12 +51,28 @@ function ProductDetail() {
         productId: product.id,
         variantId: variantId === "base" ? null : variantId,
       }});
-      if (res.url) window.location.href = res.url;
-      else throw new Error(res.error ?? "Checkout failed");
+      if (res.url) { window.location.href = res.url; return; }
+      throw new Error(res.error ?? "Checkout failed");
     } catch (e: any) {
-      toast.error(e.message ?? "Checkout failed");
+      console.error("Checkout failed:", e);
+      toast.error(e?.message ?? "Checkout failed");
       setBusy(false);
     }
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    const v = variants.find((x) => x.id === variantId);
+    add({
+      productId: product.id,
+      variantId: variantId === "base" ? null : variantId,
+      name: product.name,
+      variantName: v?.name ?? null,
+      price: currentPrice,
+      thumbnail_url: product.thumbnail_url,
+      type: product.type,
+    });
+    toast.success("Added to cart");
   }
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-stone" /></div>;
