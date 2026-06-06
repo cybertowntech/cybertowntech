@@ -1,3 +1,4 @@
+import { serveStatic } from "@hono/node-server/serve-static";
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
