@@ -2,13 +2,14 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, Package, ShieldCheck, Zap } from "lucide-react";
+import { ArrowLeft, Loader2, Package, ShieldCheck, Zap, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { createCheckout } from "@/lib/checkout.functions";
+import { useCart } from "@/context/CartContext";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -18,6 +19,7 @@ function ProductDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { add } = useCart();
   const [variantId, setVariantId] = useState<string | "base">("base");
   const [busy, setBusy] = useState(false);
 
@@ -49,12 +51,28 @@ function ProductDetail() {
         productId: product.id,
         variantId: variantId === "base" ? null : variantId,
       }});
-      if (res.url) window.location.href = res.url;
-      else throw new Error(res.error ?? "Checkout failed");
+      if (res.url) { window.location.href = res.url; return; }
+      throw new Error(res.error ?? "Checkout failed");
     } catch (e: any) {
-      toast.error(e.message ?? "Checkout failed");
+      console.error("Checkout failed:", e);
+      toast.error(e?.message ?? "Checkout failed");
       setBusy(false);
     }
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    const v = variants.find((x) => x.id === variantId);
+    add({
+      productId: product.id,
+      variantId: variantId === "base" ? null : variantId,
+      name: product.name,
+      variantName: v?.name ?? null,
+      price: currentPrice,
+      thumbnail_url: product.thumbnail_url,
+      type: product.type,
+    });
+    toast.success("Added to cart");
   }
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-stone" /></div>;
@@ -111,10 +129,17 @@ function ProductDetail() {
               </p>
             )}
 
-            <button onClick={handleBuy} disabled={busy || outOfStock} className="mt-8 w-full h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
-              {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
-            </button>
+            <div className="mt-8 grid sm:grid-cols-2 gap-3">
+              <button onClick={handleBuy} disabled={busy || outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+                {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
+              </button>
+              {!isService && !outOfStock && (
+                <button onClick={handleAddToCart} className="h-12 rounded-lg border border-border hover:border-stone text-cream font-medium transition flex items-center justify-center gap-2">
+                  <ShoppingCart className="w-4 h-4" /> Add to Cart
+                </button>
+              )}
+            </div>
 
             <div className="mt-6 flex flex-wrap gap-3 text-xs text-muted-foreground">
               <div className="inline-flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-stone" /> Secure ToyyibPay</div>
