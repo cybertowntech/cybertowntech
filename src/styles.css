@@ -116,3 +116,6 @@
   }
   .float-slow { animation: float-slow 6s ease-in-out infinite; }
 }
+a[href*="lovable.dev"] {
+  display: none !important;
+}
