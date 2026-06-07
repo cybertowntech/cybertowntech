@@ -104,7 +104,11 @@ export const createCheckout = createServerFn({ method: "POST" })
     try {
       const resp = await fetch(`${base}/index.php/api/createBill`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "Accept": "application/json, text/plain, */*",
+          "User-Agent": "CyberTownTech/1.0 (+https://cybertowntech.lovable.app)",
+        },
         body: form.toString(),
       });
       txt = await resp.text();

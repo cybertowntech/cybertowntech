@@ -48,7 +48,7 @@ function ProductDetail() {
       to: "/checkout",
       search: {
         productId: product.id,
-        variantId: variantId === "base" ? null : variantId,
+        variantId: variantId === "base" ? undefined : variantId,
       },
     });
   }
@@ -70,8 +70,6 @@ function ProductDetail() {
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-stone" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
-
-  const isService = product.type === "service";
 
   return (
     <div className="min-h-screen bg-background">
