@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 
-export const Route = createFileRoute("/products")({
+export const Route = createFileRoute("/products/")({
   head: () => ({
     meta: [
       { title: "Products — CyberTown Tech" },
