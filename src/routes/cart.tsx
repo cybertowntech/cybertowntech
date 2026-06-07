@@ -1,13 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Loader2, ShoppingCart, Trash2, Package, ArrowRight } from "lucide-react";
+import { ShoppingCart, Trash2, Package, ArrowRight } from "lucide-react";
 import SiteNav from "@/components/SiteNav";
 import { useCart } from "@/context/CartContext";
-import { useAuth } from "@/hooks/useAuth";
 import { formatMYR } from "@/lib/format";
-import { createCheckout } from "@/lib/checkout.functions";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -21,24 +17,7 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { items, remove, count } = useCart();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [busyId, setBusyId] = useState<string | null>(null);
   const total = items.reduce((s, i) => s + Number(i.price), 0);
-
-  async function buyItem(productId: string, variantId: string | null) {
-    if (!user) { toast.error("Please sign in to checkout"); navigate({ to: "/auth" }); return; }
-    const key = productId + ":" + (variantId ?? "");
-    setBusyId(key);
-    try {
-      const res = await createCheckout({ data: { productId, variantId } });
-      if (res.url) { window.location.href = res.url; return; }
-      throw new Error(res.error ?? "Checkout failed");
-    } catch (e: any) {
-      toast.error(e.message ?? "Checkout failed");
-      setBusyId(null);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,10 +54,9 @@ function CartPage() {
                       <div className="mt-2 flex items-center justify-between gap-3">
                         <span className="font-mono text-stone">{formatMYR(i.price)}</span>
                         <div className="flex items-center gap-2">
-                          <button onClick={() => buyItem(i.productId, i.variantId)} disabled={busyId === key} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-cream text-obsidian text-sm font-medium hover:bg-ash transition disabled:opacity-50">
-                            {busyId === key ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                          <Link to="/checkout" search={{ productId: i.productId, variantId: i.variantId ?? undefined }} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-cream text-obsidian text-sm font-medium hover:bg-ash transition">
                             Checkout
-                          </button>
+                          </Link>
                           <button onClick={() => remove(i.productId, i.variantId)} className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border hover:border-destructive hover:text-destructive transition">
                             <Trash2 className="w-4 h-4" />
                           </button>

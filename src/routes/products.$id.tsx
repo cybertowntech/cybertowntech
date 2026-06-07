@@ -3,13 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Package, ShieldCheck, Zap, ShoppingCart } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { createCheckout } from "@/lib/checkout.functions";
 import { useCart } from "@/context/CartContext";
+import { getProductDetail } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -18,19 +16,12 @@ export const Route = createFileRoute("/products/$id")({
 function ProductDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { add } = useCart();
   const [variantId, setVariantId] = useState<string | "base">("base");
-  const [busy, setBusy] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["product", id],
-    queryFn: async () => {
-      const { data: product } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
-      const { data: variants } = await supabase.from("product_variants").select("*").eq("product_id", id).order("price");
-      const { data: keys } = await supabase.from("license_keys").select("status").eq("product_id", id).eq("status", "available");
-      return { product, variants: variants ?? [], availableKeys: keys?.length ?? 0 };
-    },
+    queryFn: () => getProductDetail({ data: { productId: id } }),
   });
 
   useEffect(() => {
@@ -42,22 +33,15 @@ function ProductDetail() {
   const currentPrice = variantId === "base" ? Number(product?.base_price ?? 0) : Number(variants.find((v) => v.id === variantId)?.price ?? 0);
   const outOfStock = product?.type === "digital" && (data?.availableKeys ?? 0) === 0;
 
-  async function handleBuy() {
-    if (!user) { toast.error("Please sign in to purchase"); navigate({ to: "/auth" }); return; }
+  function handleBuy() {
     if (!product) return;
-    setBusy(true);
-    try {
-      const res = await createCheckout({ data: {
+    navigate({
+      to: "/checkout",
+      search: {
         productId: product.id,
-        variantId: variantId === "base" ? null : variantId,
-      }});
-      if (res.url) { window.location.href = res.url; return; }
-      throw new Error(res.error ?? "Checkout failed");
-    } catch (e: any) {
-      console.error("Checkout failed:", e);
-      toast.error(e?.message ?? "Checkout failed");
-      setBusy(false);
-    }
+        variantId: variantId === "base" ? undefined : variantId,
+      },
+    });
   }
 
   function handleAddToCart() {
@@ -77,8 +61,6 @@ function ProductDetail() {
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-stone" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
-
-  const isService = product.type === "service";
 
   return (
     <div className="min-h-screen bg-background">
@@ -130,11 +112,10 @@ function ProductDetail() {
             )}
 
             <div className="mt-8 grid sm:grid-cols-2 gap-3">
-              <button onClick={handleBuy} disabled={busy || outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
-                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
+              <button onClick={handleBuy} disabled={outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
+                {outOfStock ? "Out of stock" : "Buy Now"}
               </button>
-              {!isService && !outOfStock && (
+              {!outOfStock && (
                 <button onClick={handleAddToCart} className="h-12 rounded-lg border border-border hover:border-stone text-cream font-medium transition flex items-center justify-center gap-2">
                   <ShoppingCart className="w-4 h-4" /> Add to Cart
                 </button>
