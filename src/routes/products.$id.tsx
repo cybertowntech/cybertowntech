@@ -36,7 +36,6 @@ function ProductDetail() {
   const outOfStock = product?.type === "digital" && (data?.availableKeys ?? 0) === 0;
 
   function handleBuy() {
-    if (!user) { toast.error("Please sign in to purchase"); navigate({ to: "/auth" }); return; }
     if (!product) return;
     navigate({
       to: "/checkout",
