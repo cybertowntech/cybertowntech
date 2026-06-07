@@ -36,13 +36,6 @@ function CheckoutPage() {
     return `/checkout?${params.toString()}`;
   }, [productId, variantId]);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      toast.error("Please sign in to checkout");
-      navigate({ to: "/auth", search: { redirect: currentPath } });
-    }
-  }, [currentPath, loading, navigate, user]);
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["checkout-product", productId, variantId ?? null],
     enabled: !!productId,
@@ -154,7 +147,11 @@ function CheckoutPage() {
                 </div>
               </div>
 
-              {outOfStock ? (
+              {!user && !loading ? (
+                <Link to="/auth" search={{ redirect: currentPath }} className="mt-6 h-12 w-full rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition flex items-center justify-center gap-2">
+                  Sign in to pay
+                </Link>
+              ) : outOfStock ? (
                 <p className="mt-5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">Out of stock</p>
               ) : (
                 <button onClick={payNow} disabled={busy || !user} className="mt-6 h-12 w-full rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
