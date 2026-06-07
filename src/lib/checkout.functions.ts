@@ -15,15 +15,15 @@ export const createCheckout = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: product, error: pErr } = await supabase
-      .from("products").select("*").eq("id", data.productId).maybeSingle();
+    const { data: product, error: pErr } = await supabaseAdmin
+      .from("products").select("*").eq("id", data.productId).eq("status", true).maybeSingle();
     if (pErr || !product) return { error: "Product not found" };
 
     let amount = Number(product.base_price);
     let variantName: string | null = null;
     if (data.variantId) {
-      const { data: variant } = await supabase
-        .from("product_variants").select("*").eq("id", data.variantId).maybeSingle();
+      const { data: variant } = await supabaseAdmin
+        .from("product_variants").select("*").eq("id", data.variantId).eq("product_id", product.id).maybeSingle();
       if (!variant) return { error: "Variant not found" };
       amount = Number(variant.price);
       variantName = variant.name;
