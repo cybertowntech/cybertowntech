@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Search, Package } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
+import { listActiveProducts } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({
@@ -24,15 +24,7 @@ function ProductsPage() {
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id,name,description,category,thumbnail_url,type,base_price,status")
-        .eq("status", true)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listActiveProducts(),
   });
 
   const categories = useMemo(() => {

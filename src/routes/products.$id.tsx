@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Package, ShieldCheck, Zap, ShoppingCart } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
+import { getProductDetail } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/products/$id")({
   component: ProductDetail,
@@ -20,16 +20,10 @@ function ProductDetail() {
   const { user } = useAuth();
   const { add } = useCart();
   const [variantId, setVariantId] = useState<string | "base">("base");
-  const [busy, setBusy] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["product", id],
-    queryFn: async () => {
-      const { data: product } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
-      const { data: variants } = await supabase.from("product_variants").select("*").eq("product_id", id).order("price");
-      const { data: keys } = await supabase.from("license_keys").select("status").eq("product_id", id).eq("status", "available");
-      return { product, variants: variants ?? [], availableKeys: keys?.length ?? 0 };
-    },
+    queryFn: () => getProductDetail({ data: { productId: id } }),
   });
 
   useEffect(() => {
@@ -121,8 +115,7 @@ function ProductDetail() {
             )}
 
             <div className="mt-8 grid sm:grid-cols-2 gap-3">
-              <button onClick={handleBuy} disabled={busy || outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
-                {busy && <Loader2 className="w-4 h-4 animate-spin" />}
+              <button onClick={handleBuy} disabled={outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
                 {outOfStock ? "Out of stock" : "Buy Now"}
               </button>
               {!outOfStock && (

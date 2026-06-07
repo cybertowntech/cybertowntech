@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, CreditCard, Loader2, Package, ShieldCheck } from "lucide-react";
 import SiteNav from "@/components/SiteNav";
-import { supabase } from "@/integrations/supabase/client";
 import { createCheckout } from "@/lib/checkout.functions";
 import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { getProductDetail } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (s: Record<string, unknown>): { productId: string; variantId?: string } => ({
@@ -47,30 +47,10 @@ function CheckoutPage() {
     queryKey: ["checkout-product", productId, variantId ?? null],
     enabled: !!productId,
     queryFn: async () => {
-      const { data: product, error: productError } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", productId)
-        .eq("status", true)
-        .maybeSingle();
-      if (productError) throw productError;
-      if (!product) throw new Error("Product not found");
-
-      const { data: variants } = await supabase
-        .from("product_variants")
-        .select("*")
-        .eq("product_id", productId)
-        .order("price");
-      const selectedVariant = variantId ? variants?.find((v) => v.id === variantId) ?? null : null;
-      if (variantId && !selectedVariant) throw new Error("Variant not found");
-
-      const { data: keys } = await supabase
-        .from("license_keys")
-        .select("id")
-        .eq("product_id", productId)
-        .eq("status", "available");
-
-      return { product, variant: selectedVariant, availableKeys: keys?.length ?? 0 };
+      const detail = await getProductDetail({ data: { productId, variantId: variantId ?? null } });
+      if (!detail.product) throw new Error("Product not found");
+      if (variantId && !detail.selectedVariant) throw new Error("Variant not found");
+      return { product: detail.product, variant: detail.selectedVariant, availableKeys: detail.availableKeys };
     },
   });
 
