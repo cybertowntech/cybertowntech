@@ -8,7 +8,6 @@ import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { createCheckout } from "@/lib/checkout.functions";
 import { useCart } from "@/context/CartContext";
 
 export const Route = createFileRoute("/products/$id")({
@@ -42,22 +41,16 @@ function ProductDetail() {
   const currentPrice = variantId === "base" ? Number(product?.base_price ?? 0) : Number(variants.find((v) => v.id === variantId)?.price ?? 0);
   const outOfStock = product?.type === "digital" && (data?.availableKeys ?? 0) === 0;
 
-  async function handleBuy() {
+  function handleBuy() {
     if (!user) { toast.error("Please sign in to purchase"); navigate({ to: "/auth" }); return; }
     if (!product) return;
-    setBusy(true);
-    try {
-      const res = await createCheckout({ data: {
+    navigate({
+      to: "/checkout",
+      search: {
         productId: product.id,
         variantId: variantId === "base" ? null : variantId,
-      }});
-      if (res.url) { window.location.href = res.url; return; }
-      throw new Error(res.error ?? "Checkout failed");
-    } catch (e: any) {
-      console.error("Checkout failed:", e);
-      toast.error(e?.message ?? "Checkout failed");
-      setBusy(false);
-    }
+      },
+    });
   }
 
   function handleAddToCart() {
@@ -132,9 +125,9 @@ function ProductDetail() {
             <div className="mt-8 grid sm:grid-cols-2 gap-3">
               <button onClick={handleBuy} disabled={busy || outOfStock} className="h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
                 {busy && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isService ? "Request a Quote" : outOfStock ? "Out of stock" : "Buy Now"}
+                {outOfStock ? "Out of stock" : "Buy Now"}
               </button>
-              {!isService && !outOfStock && (
+              {!outOfStock && (
                 <button onClick={handleAddToCart} className="h-12 rounded-lg border border-border hover:border-stone text-cream font-medium transition flex items-center justify-center gap-2">
                   <ShoppingCart className="w-4 h-4" /> Add to Cart
                 </button>
