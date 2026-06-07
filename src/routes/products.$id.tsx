@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Package, ShieldCheck, Zap, ShoppingCart } from "lucide-react";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { getProductDetail } from "@/lib/products.functions";
@@ -17,7 +16,6 @@ export const Route = createFileRoute("/products/$id")({
 function ProductDetail() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { add } = useCart();
   const [variantId, setVariantId] = useState<string | "base">("base");
 
