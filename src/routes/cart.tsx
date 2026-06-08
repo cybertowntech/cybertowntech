@@ -1,9 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ShoppingCart, Trash2, Package, ArrowRight } from "lucide-react";
+import { ShoppingCart, Trash2, Package, ArrowRight, CreditCard, Loader2, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import SiteNav from "@/components/SiteNav";
 import { useCart } from "@/context/CartContext";
 import { formatMYR } from "@/lib/format";
+import { useAuth } from "@/hooks/useAuth";
+import { createCartCheckout } from "@/lib/checkout.functions";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -17,7 +21,33 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { items, remove, count } = useCart();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const [busy, setBusy] = useState(false);
   const total = items.reduce((s, i) => s + Number(i.price), 0);
+
+  async function payAll() {
+    if (items.length === 0) return;
+    if (!user) {
+      navigate({ to: "/auth", search: { redirect: "/cart" } });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await createCartCheckout({
+        data: { items: items.map((i) => ({ productId: i.productId, variantId: i.variantId })) },
+      });
+      if (res.url) {
+        window.location.href = res.url;
+        return;
+      }
+      throw new Error(res.error ?? "Checkout failed");
+    } catch (e: any) {
+      console.error("Cart checkout failed:", e);
+      toast.error(e?.message ?? "Checkout failed");
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -53,14 +83,9 @@ function CartPage() {
                       {i.variantName && <p className="text-xs text-muted-foreground">{i.variantName}</p>}
                       <div className="mt-2 flex items-center justify-between gap-3">
                         <span className="font-mono text-stone">{formatMYR(i.price)}</span>
-                        <div className="flex items-center gap-2">
-                          <Link to="/checkout" search={{ productId: i.productId, variantId: i.variantId ?? undefined }} className="inline-flex items-center gap-1.5 h-9 px-4 rounded-md bg-cream text-obsidian text-sm font-medium hover:bg-ash transition">
-                            Checkout
-                          </Link>
-                          <button onClick={() => remove(i.productId, i.variantId)} className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border hover:border-destructive hover:text-destructive transition">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <button onClick={() => remove(i.productId, i.variantId)} className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border hover:border-destructive hover:text-destructive transition">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -82,9 +107,20 @@ function CartPage() {
                 <span className="text-sm text-muted-foreground">Total</span>
                 <span className="text-2xl font-display font-semibold text-cream">{formatMYR(total)}</span>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">
-                Each item is checked out separately via ToyyibPay. Click <strong>Checkout</strong> next to an item to pay for it.
-              </p>
+
+              {!user && !loading ? (
+                <Link to="/auth" search={{ redirect: "/cart" }} className="mt-6 h-12 w-full rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition flex items-center justify-center gap-2">
+                  Sign in to pay
+                </Link>
+              ) : (
+                <button onClick={payAll} disabled={busy || loading} className="mt-6 h-12 w-full rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2">
+                  {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                  Pay {formatMYR(total)} with ToyyibPay
+                </button>
+              )}
+              <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <ShieldCheck className="w-3.5 h-3.5 text-stone" /> One secure payment for all items
+              </div>
               <Link to="/products" className="mt-4 block text-center text-sm text-ash hover:text-cream transition">Continue shopping →</Link>
             </aside>
           </div>
