@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
 import Hero3D from "@/components/Hero3D";
@@ -61,9 +61,9 @@ function Home() {
             transition={{ delay: 1.7, duration: 0.8 }}
             className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 pointer-events-auto"
           >
-            <a href="#products" className="group inline-flex items-center gap-2 px-7 h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition shadow-[0_0_40px_-10px_rgba(242,237,232,0.4)]">
+            <Link to="/products" className="group inline-flex items-center gap-2 px-7 h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition shadow-[0_0_40px_-10px_rgba(242,237,232,0.4)]">
               Browse Products <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-            </a>
+            </Link>
             <a href="#services" className="inline-flex items-center gap-2 px-7 h-12 rounded-lg border border-stone/40 text-cream hover:border-stone hover:bg-stone/5 transition">
               Our Services
             </a>
