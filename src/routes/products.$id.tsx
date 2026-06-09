@@ -20,31 +20,20 @@ function ProductDetail() {
   const [variantId, setVariantId] = useState<string | "base">("base");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["product", id],
-    queryFn: () => getProductDetail({ data: { productId: id } }),
+    queryKey: ["product", id, variantId],
+    queryFn: () => getProductDetail({ data: { productId: id, variantId: variantId === "base" ? null : variantId } }),
   });
 
   useEffect(() => {
-    if (data?.variants?.length) setVariantId(data.variants[0].id);
-  }, [data?.variants]);
+    if (data?.variants?.length && variantId === "base") setVariantId(data.variants[0].id);
+  }, [data?.variants, variantId]);
 
   const product = data?.product;
   const variants = data?.variants ?? [];
   const currentPrice = variantId === "base" ? Number(product?.base_price ?? 0) : Number(variants.find((v) => v.id === variantId)?.price ?? 0);
   const outOfStock = product?.type === "digital" && (data?.availableKeys ?? 0) === 0;
 
-  function handleBuy() {
-    if (!product) return;
-    navigate({
-      to: "/checkout",
-      search: {
-        productId: product.id,
-        variantId: variantId === "base" ? undefined : variantId,
-      },
-    });
-  }
-
-  function handleAddToCart() {
+  function addItemToCart() {
     if (!product) return;
     const v = variants.find((x) => x.id === variantId);
     add({
@@ -56,8 +45,20 @@ function ProductDetail() {
       thumbnail_url: product.thumbnail_url,
       type: product.type,
     });
+  }
+
+  function handleBuy() {
+    if (!product) return;
+    addItemToCart();
+    navigate({ to: "/cart" });
+  }
+
+  function handleAddToCart() {
+    if (!product) return;
+    addItemToCart();
     toast.success("Added to cart");
   }
+
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-6 h-6 animate-spin text-stone" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Product not found</div>;
