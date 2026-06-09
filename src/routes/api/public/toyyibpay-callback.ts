@@ -76,8 +76,15 @@ export const Route = createFileRoute("/api/public/toyyibpay-callback")({
 
             // Increment voucher usage
             if (order.voucher_code) {
-              await supabaseAdmin.rpc("increment_voucher_use", { _code: order.voucher_code }).catch(() => {});
+              const { data: vRow } = await supabaseAdmin
+                .from("vouchers").select("uses").eq("code", order.voucher_code).maybeSingle();
+              if (vRow) {
+                await supabaseAdmin.from("vouchers")
+                  .update({ uses: (vRow.uses ?? 0) + 1 })
+                  .eq("code", order.voucher_code);
+              }
             }
+
           }
         } else if (statusId === "3") {
           await supabaseAdmin.from("orders").update({ status: "failed" })
