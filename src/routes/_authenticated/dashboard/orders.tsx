@@ -14,14 +14,16 @@ function OrdersPage() {
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
     queryFn: async () => {
+      const email = user!.email ?? "";
       const { data } = await supabase
         .from("orders")
         .select("id,amount,status,created_at,products(name),product_variants(name)")
-        .eq("user_id", user!.id)
+        .or(`user_id.eq.${user!.id},customer_email.eq.${email}`)
         .order("created_at", { ascending: false });
       return data ?? [];
     },
   });
+
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold">Order History</h2>

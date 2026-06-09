@@ -16,14 +16,33 @@ function KeysPage() {
     queryKey: ["my-keys", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const email = user!.email ?? "";
+      // Find orders owned OR matched by email, then load keys for those orders
+      const { data: orders } = await supabase
+        .from("orders")
+        .select("id")
+        .or(`user_id.eq.${user!.id},customer_email.eq.${email}`);
+      const orderIds = (orders ?? []).map((o) => o.id);
+      const { data: directKeys } = await supabase
         .from("license_keys")
         .select("id,key_value,assigned_at,products(name,notes)")
-        .eq("assigned_to", user!.id)
-        .order("assigned_at", { ascending: false });
-      return data ?? [];
+        .eq("assigned_to", user!.id);
+      let extraKeys: any[] = [];
+      if (orderIds.length) {
+        const { data } = await supabase
+          .from("license_keys")
+          .select("id,key_value,assigned_at,products(name,notes)")
+          .in("order_id", orderIds);
+        extraKeys = data ?? [];
+      }
+      const map = new Map<string, any>();
+      [...(directKeys ?? []), ...extraKeys].forEach((k) => map.set(k.id, k));
+      return Array.from(map.values()).sort((a, b) =>
+        (b.assigned_at ?? "").localeCompare(a.assigned_at ?? "")
+      );
     },
   });
+
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold">Your License Keys</h2>
