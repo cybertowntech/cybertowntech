@@ -15,15 +15,21 @@ function Overview() {
     queryKey: ["dash-overview", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const [orders, keys] = await Promise.all([
-        supabase.from("orders").select("amount,status").eq("user_id", user!.id),
+      const email = user!.email ?? "";
+      const [orders, keysByUser, ordersByEmail] = await Promise.all([
+        supabase.from("orders").select("id,amount,status").eq("user_id", user!.id),
         supabase.from("license_keys").select("id").eq("assigned_to", user!.id),
+        supabase.from("orders").select("id,amount,status").eq("customer_email", email),
       ]);
-      const paid = (orders.data ?? []).filter(o => o.status === "paid");
+      const map = new Map<string, { amount: number; status: string }>();
+      [...(orders.data ?? []), ...(ordersByEmail.data ?? [])].forEach((o: any) => map.set(o.id, o));
+      const all = Array.from(map.values());
+      const paid = all.filter(o => o.status === "paid");
       const total = paid.reduce((s, o) => s + Number(o.amount), 0);
-      return { orderCount: orders.data?.length ?? 0, keyCount: keys.data?.length ?? 0, total };
+      return { orderCount: all.length, keyCount: keysByUser.data?.length ?? 0, total };
     },
   });
+
   const stats = [
     { l: "Total spent", v: formatMYR(data?.total ?? 0), i: DollarSign },
     { l: "Orders", v: String(data?.orderCount ?? 0), i: ShoppingBag },

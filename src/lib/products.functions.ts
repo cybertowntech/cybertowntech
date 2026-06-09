@@ -37,11 +37,13 @@ export const getProductDetail = createServerFn({ method: "GET" })
       .order("price");
     if (variantsError) throw variantsError;
 
-    const { count } = await supabaseAdmin
+    let kq = supabaseAdmin
       .from("license_keys")
       .select("id", { count: "exact", head: true })
       .eq("product_id", data.productId)
       .eq("status", "available");
+    kq = data.variantId ? kq.eq("variant_id", data.variantId) : kq.is("variant_id", null);
+    const { count } = await kq;
 
     const selectedVariant = data.variantId ? (variants ?? []).find((v) => v.id === data.variantId) ?? null : null;
     return { product, variants: variants ?? [], availableKeys: count ?? 0, selectedVariant };

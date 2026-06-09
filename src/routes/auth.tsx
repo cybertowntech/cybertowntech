@@ -27,7 +27,7 @@ function AuthPage() {
 
   useEffect(() => { setIsRegister(mode === "register"); }, [mode]);
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => { if (data.user) window.location.href = redirect ?? "/dashboard"; });
+    supabase.auth.getUser().then(({ data }) => { if (data.user) window.location.href = redirect ?? "/"; });
   }, [navigate, redirect]);
 
   async function handleEmail(e: React.FormEvent) {
@@ -37,7 +37,7 @@ function AuthPage() {
       if (isRegister) {
         const { error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: name } },
+          options: { emailRedirectTo: `${window.location.origin}/`, data: { full_name: name } },
         });
         if (error) throw error;
         toast.success("Account created! Check your email to confirm.");
@@ -46,12 +46,13 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back");
         if (redirect) window.location.href = redirect;
-        else navigate({ to: "/dashboard" });
+        else navigate({ to: "/" });
       }
     } catch (e: any) {
       toast.error(e.message ?? "Something went wrong");
     } finally { setLoading(false); }
   }
+
 
   async function handleGoogle() {
     setLoading(true);

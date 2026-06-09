@@ -25,6 +25,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as ApiPublicToyyibpayCallbackRouteImport } from './routes/api/public/toyyibpay-callback'
 import { Route as AuthenticatedDashboardOrdersRouteImport } from './routes/_authenticated/dashboard/orders'
 import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authenticated/dashboard/keys'
+import { Route as AuthenticatedAdminVouchersRouteImport } from './routes/_authenticated/admin/vouchers'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
@@ -116,6 +117,12 @@ const AuthenticatedDashboardKeysRoute =
     path: '/keys',
     getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
+const AuthenticatedAdminVouchersRoute =
+  AuthenticatedAdminVouchersRouteImport.update({
+    id: '/vouchers',
+    path: '/vouchers',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
@@ -189,6 +197,7 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
   '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
   '/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
@@ -214,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
+  '/_authenticated/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
   '/_authenticated/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
   '/_authenticated/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
@@ -239,6 +249,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/settings'
+    | '/admin/vouchers'
     | '/dashboard/keys'
     | '/dashboard/orders'
     | '/api/public/toyyibpay-callback'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/settings'
+    | '/admin/vouchers'
     | '/dashboard/keys'
     | '/dashboard/orders'
     | '/api/public/toyyibpay-callback'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/settings'
+    | '/_authenticated/admin/vouchers'
     | '/_authenticated/dashboard/keys'
     | '/_authenticated/dashboard/orders'
     | '/api/public/toyyibpay-callback'
@@ -415,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardKeysRouteImport
       parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
+    '/_authenticated/admin/vouchers': {
+      id: '/_authenticated/admin/vouchers'
+      path: '/vouchers'
+      fullPath: '/admin/vouchers'
+      preLoaderRoute: typeof AuthenticatedAdminVouchersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -467,6 +487,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
+  AuthenticatedAdminVouchersRoute: typeof AuthenticatedAdminVouchersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -478,6 +499,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
     AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
     AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
+    AuthenticatedAdminVouchersRoute: AuthenticatedAdminVouchersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
 
@@ -545,13 +567,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
