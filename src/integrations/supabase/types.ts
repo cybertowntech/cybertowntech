@@ -24,6 +24,7 @@ export type Database = {
           order_id: string | null
           product_id: string
           status: Database["public"]["Enums"]["key_status"]
+          variant_id: string | null
         }
         Insert: {
           assigned_at?: string | null
@@ -34,6 +35,7 @@ export type Database = {
           order_id?: string | null
           product_id: string
           status?: Database["public"]["Enums"]["key_status"]
+          variant_id?: string | null
         }
         Update: {
           assigned_at?: string | null
@@ -44,6 +46,7 @@ export type Database = {
           order_id?: string | null
           product_id?: string
           status?: Database["public"]["Enums"]["key_status"]
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -60,6 +63,13 @@ export type Database = {
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "license_keys_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
         ]
       }
       orders: {
@@ -69,6 +79,7 @@ export type Database = {
           customer_email: string
           customer_name: string | null
           customer_phone: string | null
+          discount_amount: number
           id: string
           paid_at: string | null
           product_id: string | null
@@ -77,6 +88,7 @@ export type Database = {
           toyyibpay_ref: string | null
           user_id: string | null
           variant_id: string | null
+          voucher_code: string | null
         }
         Insert: {
           amount: number
@@ -84,6 +96,7 @@ export type Database = {
           customer_email: string
           customer_name?: string | null
           customer_phone?: string | null
+          discount_amount?: number
           id?: string
           paid_at?: string | null
           product_id?: string | null
@@ -92,6 +105,7 @@ export type Database = {
           toyyibpay_ref?: string | null
           user_id?: string | null
           variant_id?: string | null
+          voucher_code?: string | null
         }
         Update: {
           amount?: number
@@ -99,6 +113,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string | null
           customer_phone?: string | null
+          discount_amount?: number
           id?: string
           paid_at?: string | null
           product_id?: string | null
@@ -107,6 +122,7 @@ export type Database = {
           toyyibpay_ref?: string | null
           user_id?: string | null
           variant_id?: string | null
+          voucher_code?: string | null
         }
         Relationships: [
           {
@@ -262,6 +278,42 @@ export type Database = {
         }
         Relationships: []
       }
+      vouchers: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["voucher_discount_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type: Database["public"]["Enums"]["voucher_discount_type"]
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["voucher_discount_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          uses?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -281,6 +333,7 @@ export type Database = {
       key_status: "available" | "reserved" | "used"
       order_status: "pending" | "paid" | "failed" | "refunded"
       product_type: "digital" | "service"
+      voucher_discount_type: "percent" | "fixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -412,6 +465,7 @@ export const Constants = {
       key_status: ["available", "reserved", "used"],
       order_status: ["pending", "paid", "failed", "refunded"],
       product_type: ["digital", "service"],
+      voucher_discount_type: ["percent", "fixed"],
     },
   },
 } as const
