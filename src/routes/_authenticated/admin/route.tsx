@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, redirect, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
-import { LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Settings, Key } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Users, BarChart3, Settings, Key, Tag } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   beforeLoad: async () => {
@@ -19,11 +19,13 @@ function AdminLayout() {
     { to: "/admin", label: "Overview", icon: LayoutDashboard },
     { to: "/admin/products", label: "Products", icon: Package },
     { to: "/admin/keys", label: "License Keys", icon: Key },
+    { to: "/admin/vouchers", label: "Vouchers", icon: Tag },
     { to: "/admin/orders", label: "Orders", icon: ShoppingBag },
     { to: "/admin/customers", label: "Customers", icon: Users },
     { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { to: "/admin/settings", label: "Settings", icon: Settings },
   ] as const;
+
   return (
     <div className="min-h-screen bg-background">
       <SiteNav />
