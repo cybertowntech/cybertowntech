@@ -8,11 +8,19 @@ const CheckoutInput = z.object({
   variantId: z.string().uuid().nullable(),
 });
 
+const GuestInfo = z.object({
+  email: z.string().email().max(160),
+  name: z.string().min(1).max(80),
+  phone: z.string().min(8).max(20),
+});
+
 const CartCheckoutInput = z.object({
   items: z.array(z.object({
     productId: z.string().uuid(),
     variantId: z.string().uuid().nullable(),
   })).min(1).max(50),
+  voucherCode: z.string().min(1).max(64).optional().nullable(),
+  guest: GuestInfo.optional().nullable(),
 });
 
 function getOrigin() {
@@ -72,9 +80,11 @@ export const createCheckout = createServerFn({ method: "POST" })
     }
 
     if (product.type === "digital") {
-      const { count } = await supabaseAdmin
+      let q = supabaseAdmin
         .from("license_keys").select("*", { count: "exact", head: true })
         .eq("product_id", product.id).eq("status", "available");
+      q = data.variantId ? q.eq("variant_id", data.variantId) : q.is("variant_id", null);
+      const { count } = await q;
       if (!count || count < 1) return { error: "Out of stock" };
     }
 
@@ -148,17 +158,36 @@ export const createCheckout = createServerFn({ method: "POST" })
     return { url: `${base}/${billCode}`, orderId: order.id };
   });
 
+// Guest-friendly multi-item checkout. If the request is authenticated, the
+// attachSupabaseAuth middleware sets the bearer header automatically — we
+// resolve the user from it inside the handler.
 export const createCartCheckout = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .inputValidator((input) => CartCheckoutInput.parse(input))
-  .handler(async ({ data, context }): Promise<{ url?: string; orderIds?: string[]; error?: string }> => {
-    const { userId, claims } = context;
+  .handler(async ({ data }): Promise<{ url?: string; orderIds?: string[]; error?: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Try to resolve current user from bearer (optional — guests allowed)
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+    try {
+      const req = getRequest();
+      const auth = req?.headers.get("authorization") ?? "";
+      const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : null;
+      if (token) {
+        const { data: u } = await supabaseAdmin.auth.getUser(token);
+        if (u?.user) {
+          userId = u.user.id;
+          userEmail = u.user.email ?? null;
+        }
+      }
+    } catch {}
 
     // Validate + price each item server-side
     type Line = { product: any; variant: any | null; amount: number };
     const lines: Line[] = [];
-    const digitalCounts = new Map<string, number>(); // productId -> needed
+    type StockKey = string;
+    const stockNeed = new Map<StockKey, { productId: string; variantId: string | null; needed: number; name: string }>();
+    const stockKey = (p: string, v: string | null) => `${p}::${v ?? ""}`;
 
     for (const it of data.items) {
       const { data: product } = await supabaseAdmin
@@ -174,39 +203,79 @@ export const createCartCheckout = createServerFn({ method: "POST" })
         amount = Number(v.price);
       }
       if (product.type === "digital") {
-        digitalCounts.set(product.id, (digitalCounts.get(product.id) ?? 0) + 1);
+        const k = stockKey(product.id, it.variantId);
+        const cur = stockNeed.get(k);
+        if (cur) cur.needed += 1;
+        else stockNeed.set(k, { productId: product.id, variantId: it.variantId, needed: 1, name: product.name + (variant ? ` (${variant.name})` : "") });
       }
       lines.push({ product, variant, amount });
     }
 
-    // Stock check for digital products
-    for (const [productId, needed] of digitalCounts) {
-      const { count } = await supabaseAdmin
+    // Stock check per (product, variant)
+    for (const { productId, variantId, needed, name } of stockNeed.values()) {
+      let q = supabaseAdmin
         .from("license_keys").select("*", { count: "exact", head: true })
         .eq("product_id", productId).eq("status", "available");
-      if (!count || count < needed) {
-        const name = lines.find((l) => l.product.id === productId)?.product.name ?? "Item";
-        return { error: `Not enough stock for ${name}` };
-      }
+      q = variantId ? q.eq("variant_id", variantId) : q.is("variant_id", null);
+      const { count } = await q;
+      if (!count || count < needed) return { error: `Not enough stock for ${name}` };
     }
 
-    const total = lines.reduce((s, l) => s + l.amount, 0);
-    if (total <= 0) return { error: "Cart total must be greater than zero" };
+    const subtotal = lines.reduce((s, l) => s + l.amount, 0);
+    if (subtotal <= 0) return { error: "Cart total must be greater than zero" };
 
-    const { email, name, phone } = await getBuyerInfo(userId, claims);
-    if (!email) return { error: "Your account has no email. Please update your profile." };
+    // Voucher
+    let discount = 0;
+    let voucherCode: string | null = null;
+    if (data.voucherCode) {
+      const code = data.voucherCode.trim().toUpperCase();
+      const { data: v } = await supabaseAdmin
+        .from("vouchers").select("*").eq("code", code).maybeSingle();
+      if (!v) return { error: "Voucher not found" };
+      if (!v.active) return { error: "Voucher inactive" };
+      if (v.expires_at && new Date(v.expires_at) < new Date()) return { error: "Voucher expired" };
+      if (v.max_uses !== null && v.uses >= v.max_uses) return { error: "Voucher fully redeemed" };
+      discount = v.discount_type === "percent"
+        ? subtotal * (Number(v.discount_value) / 100)
+        : Number(v.discount_value);
+      discount = Math.min(discount, subtotal);
+      discount = Math.round(discount * 100) / 100;
+      voucherCode = v.code;
+    }
+    const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+    if (total <= 0) return { error: "Order total must be greater than zero" };
 
-    // Create one order row per item, sharing toyyibpay_bill_code later
-    const insertRows = lines.map((l) => ({
-      user_id: userId,
-      product_id: l.product.id,
-      variant_id: l.variant?.id ?? null,
-      amount: l.amount,
-      status: "pending" as const,
-      customer_email: email,
-      customer_name: name,
-      customer_phone: phone,
-    }));
+    // Buyer info
+    let email = "", name = "", phone = "60123456789";
+    if (userId) {
+      const buyer = await getBuyerInfo(userId, { email: userEmail });
+      email = buyer.email; name = buyer.name; phone = buyer.phone;
+    }
+    if (data.guest) {
+      email = data.guest.email.trim();
+      name = data.guest.name.trim().slice(0, 50);
+      phone = data.guest.phone.replace(/\D/g, "") || phone;
+    }
+    if (!email) return { error: "Email is required to check out" };
+
+    // Spread the discount proportionally across line items so each order row sums to `total`
+    const perItemDiscount = lines.map((l) => (subtotal > 0 ? (l.amount / subtotal) * discount : 0));
+    const insertRows = lines.map((l, idx) => {
+      const d = Math.round(perItemDiscount[idx] * 100) / 100;
+      return {
+        user_id: userId,
+        product_id: l.product.id,
+        variant_id: l.variant?.id ?? null,
+        amount: Math.max(0, Math.round((l.amount - d) * 100) / 100),
+        status: "pending" as const,
+        customer_email: email,
+        customer_name: name,
+        customer_phone: phone,
+        voucher_code: voucherCode,
+        discount_amount: d,
+      };
+    });
+
     const { data: orders, error: oErr } = await supabaseAdmin
       .from("orders").insert(insertRows).select("*");
     if (oErr || !orders || orders.length === 0) return { error: oErr?.message ?? "Failed to create orders" };
@@ -233,7 +302,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       billReturnUrl: `${origin}/thank-you?order=${primary.id}`,
       billCallbackUrl: `${origin}/api/public/toyyibpay-callback`,
       billExternalReferenceNo: externalRef,
-      billTo: name,
+      billTo: name || email.split("@")[0],
       billEmail: email,
       billPhone: phone,
     });
