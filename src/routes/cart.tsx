@@ -1,6 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { ShoppingCart, Trash2, Package, ArrowRight, CreditCard, Loader2, ShieldCheck, Tag, X, Check } from "lucide-react";
+import { ShoppingCart, Trash2, Package, ArrowRight, CreditCard, Loader2, ShieldCheck, Tag, X, Check, Gift } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import SiteNav from "@/components/SiteNav";
@@ -9,6 +9,8 @@ import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { createCartCheckout } from "@/lib/checkout.functions";
 import { validateVoucher } from "@/lib/vouchers.functions";
+import { setStoredGuestEmail } from "@/hooks/useDashboardEmail";
+
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const { items, remove, count } = useCart();
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  
   const [busy, setBusy] = useState(false);
 
   // Voucher
@@ -87,7 +89,12 @@ function CartPage() {
           guest,
         },
       });
-      if (res.url) { window.location.href = res.url; return; }
+      if (res.url) {
+        // Persist guest email so the dashboard remembers them.
+        if (guest?.email) setStoredGuestEmail(guest.email);
+        window.location.href = res.url;
+        return;
+      }
       throw new Error(res.error ?? "Checkout failed");
     } catch (e: any) {
       console.error("Cart checkout failed:", e);
@@ -95,6 +102,7 @@ function CartPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -202,9 +210,12 @@ function CartPage() {
                 disabled={busy || loading}
                 className="mt-6 h-12 w-full rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
-                {user || showGuestForm ? `Pay ${formatMYR(total)} with ToyyibPay` : "Continue to payment"}
+                {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : total <= 0 ? <Gift className="w-4 h-4" /> : <CreditCard className="w-4 h-4" />}
+                {total <= 0
+                  ? (user || showGuestForm ? "Claim for free" : "Continue to checkout")
+                  : (user || showGuestForm ? `Pay ${formatMYR(total)} with ToyyibPay` : "Continue to payment")}
               </button>
+
 
               {!user && !loading && (
                 <p className="mt-3 text-center text-xs text-muted-foreground">

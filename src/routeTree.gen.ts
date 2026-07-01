@@ -11,20 +11,20 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ThankYouRouteImport } from './routes/thank-you'
 import { Route as ProductsRouteImport } from './routes/products'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsIndexRouteImport } from './routes/products.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as ProductsIdRouteImport } from './routes/products.$id'
-import { Route as AuthenticatedDashboardRouteRouteImport } from './routes/_authenticated/dashboard/route'
+import { Route as DashboardOrdersRouteImport } from './routes/dashboard.orders'
+import { Route as DashboardKeysRouteImport } from './routes/dashboard.keys'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiPublicToyyibpayCallbackRouteImport } from './routes/api/public/toyyibpay-callback'
-import { Route as AuthenticatedDashboardOrdersRouteImport } from './routes/_authenticated/dashboard/orders'
-import { Route as AuthenticatedDashboardKeysRouteImport } from './routes/_authenticated/dashboard/keys'
 import { Route as AuthenticatedAdminVouchersRouteImport } from './routes/_authenticated/admin/vouchers'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
@@ -41,6 +41,11 @@ const ThankYouRoute = ThankYouRouteImport.update({
 const ProductsRoute = ProductsRouteImport.update({
   id: '/products',
   path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -72,28 +77,31 @@ const ProductsIndexRoute = ProductsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ProductsRoute,
 } as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const ProductsIdRoute = ProductsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => ProductsRoute,
 } as any)
-const AuthenticatedDashboardRouteRoute =
-  AuthenticatedDashboardRouteRouteImport.update({
-    id: '/dashboard',
-    path: '/dashboard',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
+const DashboardOrdersRoute = DashboardOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardKeysRoute = DashboardKeysRouteImport.update({
+  id: '/keys',
+  path: '/keys',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardIndexRoute =
-  AuthenticatedDashboardIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
-  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -104,18 +112,6 @@ const ApiPublicToyyibpayCallbackRoute =
     id: '/api/public/toyyibpay-callback',
     path: '/api/public/toyyibpay-callback',
     getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedDashboardOrdersRoute =
-  AuthenticatedDashboardOrdersRouteImport.update({
-    id: '/orders',
-    path: '/orders',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
-  } as any)
-const AuthenticatedDashboardKeysRoute =
-  AuthenticatedDashboardKeysRouteImport.update({
-    id: '/keys',
-    path: '/keys',
-    getParentRoute: () => AuthenticatedDashboardRouteRoute,
   } as any)
 const AuthenticatedAdminVouchersRoute =
   AuthenticatedAdminVouchersRouteImport.update({
@@ -164,11 +160,14 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/products': typeof ProductsRouteWithChildren
   '/thank-you': typeof ThankYouRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
-  '/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/dashboard/keys': typeof DashboardKeysRoute
+  '/dashboard/orders': typeof DashboardOrdersRoute
   '/products/$id': typeof ProductsIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -177,11 +176,8 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
-  '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
-  '/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -189,7 +185,10 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/thank-you': typeof ThankYouRoute
+  '/dashboard/keys': typeof DashboardKeysRoute
+  '/dashboard/orders': typeof DashboardOrdersRoute
   '/products/$id': typeof ProductsIdRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/products': typeof ProductsIndexRoute
   '/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -198,11 +197,8 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
-  '/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
-  '/dashboard': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -211,11 +207,14 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/products': typeof ProductsRouteWithChildren
   '/thank-you': typeof ThankYouRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteRouteWithChildren
+  '/dashboard/keys': typeof DashboardKeysRoute
+  '/dashboard/orders': typeof DashboardOrdersRoute
   '/products/$id': typeof ProductsIdRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/products/': typeof ProductsIndexRoute
   '/_authenticated/admin/analytics': typeof AuthenticatedAdminAnalyticsRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -224,11 +223,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/vouchers': typeof AuthenticatedAdminVouchersRoute
-  '/_authenticated/dashboard/keys': typeof AuthenticatedDashboardKeysRoute
-  '/_authenticated/dashboard/orders': typeof AuthenticatedDashboardOrdersRoute
   '/api/public/toyyibpay-callback': typeof ApiPublicToyyibpayCallbackRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
-  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -237,11 +233,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
     | '/products'
     | '/thank-you'
     | '/admin'
-    | '/dashboard'
+    | '/dashboard/keys'
+    | '/dashboard/orders'
     | '/products/$id'
+    | '/dashboard/'
     | '/products/'
     | '/admin/analytics'
     | '/admin/customers'
@@ -250,11 +249,8 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/settings'
     | '/admin/vouchers'
-    | '/dashboard/keys'
-    | '/dashboard/orders'
     | '/api/public/toyyibpay-callback'
     | '/admin/'
-    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -262,7 +258,10 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/thank-you'
+    | '/dashboard/keys'
+    | '/dashboard/orders'
     | '/products/$id'
+    | '/dashboard'
     | '/products'
     | '/admin/analytics'
     | '/admin/customers'
@@ -271,11 +270,8 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/settings'
     | '/admin/vouchers'
-    | '/dashboard/keys'
-    | '/dashboard/orders'
     | '/api/public/toyyibpay-callback'
     | '/admin'
-    | '/dashboard'
   id:
     | '__root__'
     | '/'
@@ -283,11 +279,14 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/dashboard'
     | '/products'
     | '/thank-you'
     | '/_authenticated/admin'
-    | '/_authenticated/dashboard'
+    | '/dashboard/keys'
+    | '/dashboard/orders'
     | '/products/$id'
+    | '/dashboard/'
     | '/products/'
     | '/_authenticated/admin/analytics'
     | '/_authenticated/admin/customers'
@@ -296,11 +295,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/vouchers'
-    | '/_authenticated/dashboard/keys'
-    | '/_authenticated/dashboard/orders'
     | '/api/public/toyyibpay-callback'
     | '/_authenticated/admin/'
-    | '/_authenticated/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -309,6 +305,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   ProductsRoute: typeof ProductsRouteWithChildren
   ThankYouRoute: typeof ThankYouRoute
   ApiPublicToyyibpayCallbackRoute: typeof ApiPublicToyyibpayCallbackRoute
@@ -328,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/products'
       fullPath: '/products'
       preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -372,6 +376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIndexRouteImport
       parentRoute: typeof ProductsRoute
     }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/products/$id': {
       id: '/products/$id'
       path: '/$id'
@@ -379,12 +390,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsIdRouteImport
       parentRoute: typeof ProductsRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/dashboard/orders': {
+      id: '/dashboard/orders'
+      path: '/orders'
+      fullPath: '/dashboard/orders'
+      preLoaderRoute: typeof DashboardOrdersRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/keys': {
+      id: '/dashboard/keys'
+      path: '/keys'
+      fullPath: '/dashboard/keys'
+      preLoaderRoute: typeof DashboardKeysRouteImport
+      parentRoute: typeof DashboardRoute
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -392,13 +410,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/dashboard/': {
-      id: '/_authenticated/dashboard/'
-      path: '/'
-      fullPath: '/dashboard/'
-      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -413,20 +424,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/toyyibpay-callback'
       preLoaderRoute: typeof ApiPublicToyyibpayCallbackRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/dashboard/orders': {
-      id: '/_authenticated/dashboard/orders'
-      path: '/orders'
-      fullPath: '/dashboard/orders'
-      preLoaderRoute: typeof AuthenticatedDashboardOrdersRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
-    }
-    '/_authenticated/dashboard/keys': {
-      id: '/_authenticated/dashboard/keys'
-      path: '/keys'
-      fullPath: '/dashboard/keys'
-      preLoaderRoute: typeof AuthenticatedDashboardKeysRouteImport
-      parentRoute: typeof AuthenticatedDashboardRouteRoute
     }
     '/_authenticated/admin/vouchers': {
       id: '/_authenticated/admin/vouchers'
@@ -508,37 +505,32 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
-interface AuthenticatedDashboardRouteRouteChildren {
-  AuthenticatedDashboardKeysRoute: typeof AuthenticatedDashboardKeysRoute
-  AuthenticatedDashboardOrdersRoute: typeof AuthenticatedDashboardOrdersRoute
-  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
-}
-
-const AuthenticatedDashboardRouteRouteChildren: AuthenticatedDashboardRouteRouteChildren =
-  {
-    AuthenticatedDashboardKeysRoute: AuthenticatedDashboardKeysRoute,
-    AuthenticatedDashboardOrdersRoute: AuthenticatedDashboardOrdersRoute,
-    AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
-  }
-
-const AuthenticatedDashboardRouteRouteWithChildren =
-  AuthenticatedDashboardRouteRoute._addFileChildren(
-    AuthenticatedDashboardRouteRouteChildren,
-  )
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
-  AuthenticatedDashboardRouteRoute: typeof AuthenticatedDashboardRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
-  AuthenticatedDashboardRouteRoute:
-    AuthenticatedDashboardRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface DashboardRouteChildren {
+  DashboardKeysRoute: typeof DashboardKeysRoute
+  DashboardOrdersRoute: typeof DashboardOrdersRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardKeysRoute: DashboardKeysRoute,
+  DashboardOrdersRoute: DashboardOrdersRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
 
 interface ProductsRouteChildren {
   ProductsIdRoute: typeof ProductsIdRoute
@@ -560,6 +552,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   ProductsRoute: ProductsRouteWithChildren,
   ThankYouRoute: ThankYouRoute,
   ApiPublicToyyibpayCallbackRoute: ApiPublicToyyibpayCallbackRoute,

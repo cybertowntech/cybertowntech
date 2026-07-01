@@ -243,7 +243,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       voucherCode = v.code;
     }
     const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
-    if (total <= 0) return { error: "Order total must be greater than zero" };
+
 
     // Buyer info
     let email = "", name = "", phone = "60123456789";
@@ -280,14 +280,62 @@ export const createCartCheckout = createServerFn({ method: "POST" })
       .from("orders").insert(insertRows).select("*");
     if (oErr || !orders || orders.length === 0) return { error: oErr?.message ?? "Failed to create orders" };
 
+    const primary = orders[0];
+    const emailParam = encodeURIComponent(email);
+
+    // ---------- Free checkout path (total = RM0). Skip ToyyibPay entirely,
+    // fulfill immediately, and go straight to the thank-you page. ----------
+    if (total <= 0) {
+      for (const order of orders) {
+        await supabaseAdmin.from("orders").update({
+          status: "paid",
+          paid_at: new Date().toISOString(),
+        }).eq("id", order.id);
+
+        // Assign a license key for digital products
+        const { data: product } = await supabaseAdmin
+          .from("products").select("type").eq("id", order.product_id!).maybeSingle();
+        if (product?.type === "digital") {
+          let kq = supabaseAdmin
+            .from("license_keys").select("id")
+            .eq("product_id", order.product_id!).eq("status", "available");
+          kq = order.variant_id ? kq.eq("variant_id", order.variant_id) : kq.is("variant_id", null);
+          const { data: keys } = await kq.limit(1);
+          const keyId = keys?.[0]?.id;
+          if (keyId) {
+            await supabaseAdmin.from("license_keys").update({
+              status: "used",
+              order_id: order.id,
+              assigned_to: userId,
+              assigned_at: new Date().toISOString(),
+            }).eq("id", keyId);
+          }
+        }
+      }
+      if (voucherCode) {
+        const { data: vRow } = await supabaseAdmin
+          .from("vouchers").select("uses").eq("code", voucherCode).maybeSingle();
+        if (vRow) {
+          await supabaseAdmin.from("vouchers")
+            .update({ uses: (vRow.uses ?? 0) + orders.length })
+            .eq("code", voucherCode);
+        }
+      }
+      return {
+        url: `/thank-you?order=${primary.id}&email=${emailParam}&free=1`,
+        orderIds: orders.map((o) => o.id),
+      };
+    }
+
+
     const cfg = await getToyyibConfig();
     if (!cfg.userSecretKey || !cfg.categoryCode) {
       return { error: "Payment is not configured. Please contact support." };
     }
     const origin = getOrigin();
     const base = cfg.sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com";
-    const primary = orders[0];
     const externalRef = orders.map((o) => o.id).join(",").slice(0, 250);
+
     const billName = (lines.length === 1 ? lines[0].product.name : `Cart (${lines.length} items)`).slice(0, 30);
     const billDesc = lines.map((l) => l.product.name).join(", ").slice(0, 100);
 

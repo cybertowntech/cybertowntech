@@ -4,7 +4,8 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatMYR, formatDateTime } from "@/lib/format";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { X, Ban, Trash2 } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
   component: AdminOrders,
@@ -48,6 +49,37 @@ function AdminOrders() {
     qc.invalidateQueries({ queryKey: ["admin-orders"] });
   }
 
+  // Free assigned license keys back to the pool.
+  async function releaseKeysForOrder(orderId: string) {
+    await supabase.from("license_keys").update({
+      status: "available",
+      order_id: null,
+      assigned_to: null,
+      assigned_at: null,
+    }).eq("order_id", orderId);
+  }
+
+  async function rejectOrder(id: string) {
+    if (!confirm("Reject this order? The assigned license key (if any) will be returned to inventory.")) return;
+    await releaseKeysForOrder(id);
+    const { error } = await supabase.from("orders").update({ status: "refunded" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Order rejected");
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    setSelected(null);
+  }
+
+  async function deleteOrder(id: string) {
+    if (!confirm("Permanently delete this order? Any assigned license key will be returned to inventory. This cannot be undone.")) return;
+    await releaseKeysForOrder(id);
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Order deleted");
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    setSelected(null);
+  }
+
+
   return (
     <div>
       <h1 className="text-3xl font-display font-semibold tracking-tight mb-6">Orders</h1>
@@ -72,9 +104,12 @@ function AdminOrders() {
                 <td className="p-3"><span className="text-xs px-2 py-0.5 rounded-full border border-border">{o.status}</span></td>
                 <td className="p-3 text-muted-foreground">{formatDateTime(o.created_at)}</td>
                 <td className="p-3 text-right whitespace-nowrap">
-                  {o.status === "pending" && <button onClick={() => markPaid(o.id)} className="text-xs text-stone hover:text-cream mr-2">Mark paid</button>}
+                  {o.status === "pending" && <button onClick={() => markPaid(o.id)} className="text-xs text-stone hover:text-cream mr-3">Mark paid</button>}
+                  {o.status !== "refunded" && <button onClick={() => rejectOrder(o.id)} className="text-xs text-yellow-400 hover:text-yellow-300 mr-3 inline-flex items-center gap-1"><Ban className="w-3 h-3" />Reject</button>}
+                  <button onClick={() => deleteOrder(o.id)} className="text-xs text-red-400 hover:text-red-300 mr-3 inline-flex items-center gap-1"><Trash2 className="w-3 h-3" />Delete</button>
                   <button onClick={() => setSelected(o.id)} className="text-xs text-stone hover:text-cream">View</button>
                 </td>
+
               </tr>
             ))}
           </tbody>
