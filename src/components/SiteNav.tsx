@@ -38,7 +38,7 @@ export default function SiteNav({ transparent = false }: { transparent?: boolean
           <Link to="/" className="hover:text-cream transition">Home</Link>
           <Link to="/products" className="hover:text-cream transition">Products</Link>
           <Link to="/cart" className="hover:text-cream transition">Cart</Link>
-          {user && <Link to="/dashboard" className="hover:text-cream transition">Dashboard</Link>}
+          <Link to="/dashboard" className="hover:text-cream transition">Dashboard</Link>
           {isAdmin && <Link to="/admin" className="hover:text-cream transition flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> Admin</Link>}
         </nav>
 
@@ -90,7 +90,7 @@ export default function SiteNav({ transparent = false }: { transparent?: boolean
               <span>Cart</span>
               {count > 0 && <span className="px-2 h-5 inline-flex items-center rounded-full bg-cream text-obsidian text-[10px]">{count}</span>}
             </Link>
-            {user && <Link to="/dashboard" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream">Dashboard</Link>}
+            <Link to="/dashboard" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream">Dashboard</Link>
             {isAdmin && (
               <Link to="/admin" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream flex items-center gap-2">
                 <Shield className="w-3.5 h-3.5" /> Admin

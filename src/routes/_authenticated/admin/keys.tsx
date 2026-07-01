@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDate } from "@/lib/format";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/keys")({
@@ -66,6 +66,17 @@ function AdminKeys() {
     URL.revokeObjectURL(url);
   }
 
+  async function deleteKey(id: string, status: string) {
+    const msg = status === "used"
+      ? "This key has already been sold to a customer. Delete anyway?"
+      : "Delete this key?";
+    if (!confirm(msg)) return;
+    const { error } = await supabase.from("license_keys").delete().eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success("Key deleted"); qc.invalidateQueries({ queryKey: ["admin-keys"] }); }
+  }
+
+
   return (
     <div>
       <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
@@ -100,10 +111,10 @@ function AdminKeys() {
       <div className="rounded-xl bg-card border border-border overflow-x-auto">
         <table className="w-full text-sm min-w-[700px]">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-stone">
-            <tr><th className="text-left p-3">Key</th><th className="text-left p-3">Product</th><th className="text-left p-3">Variant</th><th className="text-left p-3">Status</th><th className="text-left p-3">Assigned to</th><th className="text-left p-3">When</th></tr>
+            <tr><th className="text-left p-3">Key</th><th className="text-left p-3">Product</th><th className="text-left p-3">Variant</th><th className="text-left p-3">Status</th><th className="text-left p-3">Assigned to</th><th className="text-left p-3">When</th><th className="p-3"></th></tr>
           </thead>
           <tbody>
-            {isLoading && <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">Loading…</td></tr>}
+            {isLoading && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Loading…</td></tr>}
             {keys.map((k: any) => (
               <tr key={k.id} className="border-t border-border">
                 <td className="p-3 font-mono text-xs text-stone truncate max-w-[200px]">{k.key_value}</td>
@@ -112,8 +123,12 @@ function AdminKeys() {
                 <td className="p-3"><span className="text-xs px-2 py-0.5 rounded-full border border-border">{k.status}</span></td>
                 <td className="p-3 text-muted-foreground truncate max-w-[180px]">{k.assigned_email ?? "—"}</td>
                 <td className="p-3 text-muted-foreground">{k.assigned_at ? formatDate(k.assigned_at) : "—"}</td>
+                <td className="p-3 text-right">
+                  <button onClick={() => deleteKey(k.id, k.status)} className="text-xs text-red-400 hover:text-red-300 inline-flex items-center gap-1"><Trash2 className="w-3 h-3" /> Delete</button>
+                </td>
               </tr>
             ))}
+
           </tbody>
         </table>
       </div>
