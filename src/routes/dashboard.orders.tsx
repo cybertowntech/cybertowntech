@@ -1,34 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { formatMYR, formatDate } from "@/lib/format";
+import { useDashboardEmail } from "@/hooks/useDashboardEmail";
+import { getMyDashboard } from "@/lib/dashboard.functions";
 
-export const Route = createFileRoute("/_authenticated/dashboard/orders")({
+export const Route = createFileRoute("/dashboard/orders")({
   component: OrdersPage,
 });
 
 function OrdersPage() {
-  const { user } = useAuth();
-  const { data: orders = [], isLoading } = useQuery({
-    queryKey: ["my-orders", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const email = user!.email ?? "";
-      const { data } = await supabase
-        .from("orders")
-        .select("id,amount,status,created_at,products(name),product_variants(name)")
-        .or(`user_id.eq.${user!.id},customer_email.eq.${email}`)
-        .order("created_at", { ascending: false });
-      return data ?? [];
-    },
+  const { email } = useDashboardEmail();
+  const { data, isLoading } = useQuery({
+    queryKey: ["dash-orders", email],
+    enabled: !!email,
+    queryFn: () => getMyDashboard({ data: { email: email! } }),
   });
+  const orders = data?.orders ?? [];
 
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold">Order History</h2>
-      <div className="mt-6 rounded-2xl bg-card border border-border overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="mt-6 rounded-2xl bg-card border border-border overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-stone">
             <tr><th className="text-left p-4">Order</th><th className="text-left p-4">Product</th><th className="text-left p-4">Amount</th><th className="text-left p-4">Status</th><th className="text-left p-4">Date</th></tr>
           </thead>

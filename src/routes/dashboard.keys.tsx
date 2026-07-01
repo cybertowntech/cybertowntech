@@ -1,52 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { formatDate } from "@/lib/format";
 import { Copy, Key as KeyIcon } from "lucide-react";
 import { toast } from "sonner";
+import { useDashboardEmail } from "@/hooks/useDashboardEmail";
+import { getMyDashboard } from "@/lib/dashboard.functions";
 
-export const Route = createFileRoute("/_authenticated/dashboard/keys")({
+export const Route = createFileRoute("/dashboard/keys")({
   component: KeysPage,
 });
 
 function KeysPage() {
-  const { user } = useAuth();
-  const { data: keys = [], isLoading } = useQuery({
-    queryKey: ["my-keys", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const email = user!.email ?? "";
-      // Find orders owned OR matched by email, then load keys for those orders
-      const { data: orders } = await supabase
-        .from("orders")
-        .select("id")
-        .or(`user_id.eq.${user!.id},customer_email.eq.${email}`);
-      const orderIds = (orders ?? []).map((o) => o.id);
-      const { data: directKeys } = await supabase
-        .from("license_keys")
-        .select("id,key_value,assigned_at,products(name,notes)")
-        .eq("assigned_to", user!.id);
-      let extraKeys: any[] = [];
-      if (orderIds.length) {
-        const { data } = await supabase
-          .from("license_keys")
-          .select("id,key_value,assigned_at,products(name,notes)")
-          .in("order_id", orderIds);
-        extraKeys = data ?? [];
-      }
-      const map = new Map<string, any>();
-      [...(directKeys ?? []), ...extraKeys].forEach((k) => map.set(k.id, k));
-      return Array.from(map.values()).sort((a, b) =>
-        (b.assigned_at ?? "").localeCompare(a.assigned_at ?? "")
-      );
-    },
+  const { email } = useDashboardEmail();
+  const { data, isLoading } = useQuery({
+    queryKey: ["dash-keys", email],
+    enabled: !!email,
+    queryFn: () => getMyDashboard({ data: { email: email! } }),
   });
+  const keys = data?.keys ?? [];
 
   return (
     <div>
       <h2 className="text-2xl font-display font-semibold">Your License Keys</h2>
-      <p className="text-sm text-muted-foreground mt-1">All keys assigned to your account.</p>
+      <p className="text-sm text-muted-foreground mt-1">All keys tied to your purchases.</p>
       <div className="mt-6 space-y-3">
         {isLoading && <div className="text-muted-foreground p-8 text-center">Loading…</div>}
         {!isLoading && keys.length === 0 && (
