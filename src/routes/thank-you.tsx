@@ -1,26 +1,31 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Loader2, ArrowRight, Clock } from "lucide-react";
+import { CheckCircle2, Loader2, ArrowRight, Clock, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
+import { setStoredGuestEmail } from "@/hooks/useDashboardEmail";
 
 export const Route = createFileRoute("/thank-you")({
   validateSearch: (s: Record<string, unknown>) => ({
     order: (s.order as string) ?? "",
     unpaid: s.unpaid === "1" || s.unpaid === 1,
+    email: (s.email as string) ?? "",
+    free: s.free === "1" || s.free === 1,
   }),
   component: ThankYou,
 });
 
 function ThankYou() {
-  const { order: orderId, unpaid } = Route.useSearch();
-  const navigate = useNavigate();
+  const { order: orderId, unpaid, email, free } = Route.useSearch();
+
+  // Persist the customer email locally so their guest dashboard works after
+  // browser clears / cross-device visits.
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => { if (!data.user) navigate({ to: "/" }); });
-  }, [navigate]);
+    if (email) setStoredGuestEmail(decodeURIComponent(email));
+  }, [email]);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["order-summary", orderId],
@@ -47,17 +52,33 @@ function ThankYou() {
             <Clock className="w-20 h-20 mx-auto text-stone mb-6" />
           )}
           <h1 className="text-4xl font-display font-semibold tracking-tight">
-            {isPaid ? "Thank you!" : unpaid ? "Order pending payment" : "Processing payment…"}
+            {isPaid ? (free ? "Order confirmed!" : "Thank you!") : unpaid ? "Order pending payment" : "Processing your order…"}
           </h1>
           <p className="mt-3 text-muted-foreground">
-            {isPaid ? "Your order is confirmed. License keys are below." : "We're waiting for confirmation from the payment gateway."}
+            {isPaid
+              ? "Your order is confirmed. License keys are shown below."
+              : "We're waiting for confirmation from the payment gateway."}
           </p>
         </motion.div>
+
+        {/* Processing note */}
+        {!isPaid && (
+          <div className="mt-8 p-4 rounded-2xl bg-muted/30 border border-border flex gap-3">
+            <Info className="w-5 h-5 text-stone shrink-0 mt-0.5" />
+            <div className="text-sm text-ash">
+              <p className="text-cream font-medium">Please check your dashboard after 5–60 minutes.</p>
+              <p className="mt-1 text-muted-foreground">
+                Payments can take a few minutes to reflect. Your license keys will appear in your dashboard
+                automatically once payment is confirmed — no action needed from you.
+              </p>
+            </div>
+          </div>
+        )}
 
         {isLoading && <div className="mt-8 text-center"><Loader2 className="w-5 h-5 animate-spin mx-auto text-stone" /></div>}
 
         {data?.order && (
-          <div className="mt-10 p-6 rounded-2xl bg-card border border-border">
+          <div className="mt-8 p-6 rounded-2xl bg-card border border-border">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Order ID</span>
               <span className="font-mono text-stone">{data.order.id.slice(0, 8)}</span>
@@ -87,9 +108,9 @@ function ThankYou() {
           </div>
         )}
 
-        <div className="mt-8 flex justify-center gap-3">
-          <Link to="/dashboard/orders" className="inline-flex items-center gap-2 px-5 h-11 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition">
-            View all orders <ArrowRight className="w-4 h-4" />
+        <div className="mt-8 flex justify-center gap-3 flex-wrap">
+          <Link to="/dashboard" className="inline-flex items-center gap-2 px-5 h-11 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition">
+            Go to dashboard <ArrowRight className="w-4 h-4" />
           </Link>
           <Link to="/products" className="inline-flex items-center gap-2 px-5 h-11 rounded-lg border border-border hover:border-stone transition">
             Keep shopping
