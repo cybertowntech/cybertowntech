@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ShoppingCart, Trash2, Package, ArrowRight, CreditCard, Loader2, ShieldCheck, Tag, X, Check, Gift } from "lucide-react";
 import { useState } from "react";
