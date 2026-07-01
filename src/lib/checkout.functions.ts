@@ -334,8 +334,8 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     }
     const origin = getOrigin();
     const base = cfg.sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com";
-    const primary = orders[0];
     const externalRef = orders.map((o) => o.id).join(",").slice(0, 250);
+
     const billName = (lines.length === 1 ? lines[0].product.name : `Cart (${lines.length} items)`).slice(0, 30);
     const billDesc = lines.map((l) => l.product.name).join(", ").slice(0, 100);
 
