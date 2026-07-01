@@ -25,7 +25,7 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const { items, remove, count } = useCart();
   const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  
   const [busy, setBusy] = useState(false);
 
   // Voucher
