@@ -7,6 +7,14 @@ import { Download, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/keys")({
+  head: () => ({ meta: [
+    {"title": "License Inventory \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech license inventory."},
+    {"property": "og:title", "content": "License Inventory \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech license inventory."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminKeys,
 });
 

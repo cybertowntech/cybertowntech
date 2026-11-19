@@ -6,6 +6,14 @@ import { useDashboardEmail } from "@/hooks/useDashboardEmail";
 import { getMyDashboard } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/dashboard/")({
+  head: () => ({ meta: [
+    {"title": "Customer Overview \u2014 CyberTown Tech"},
+    {"name": "description", "content": "View your CyberTown Tech purchases and dashboard."},
+    {"property": "og:title", "content": "Customer Overview \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "View your CyberTown Tech purchases and dashboard."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: Overview,
 });
 

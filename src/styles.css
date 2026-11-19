@@ -119,3 +119,16 @@
 a[href*="lovable.dev"] {
   display: none !important;
 }
+
+.about-hero { min-height: 660px; }
+.about-hero-shade {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--obsidian) 94%, transparent), color-mix(in oklab, var(--obsidian) 78%, transparent) 45%, color-mix(in oklab, var(--obsidian) 18%, transparent)), linear-gradient(0deg, var(--background), transparent 22%);
+}
+.about-eyebrow { margin-bottom: 1.25rem; font-size: 0.75rem; font-family: var(--font-mono); text-transform: uppercase; color: var(--stone); }
+.about-heading { font-size: 2.25rem; line-height: 1.2; font-weight: 600; }
+@media (min-width: 640px) { .about-heading { font-size: 3rem; } }
+@media (max-width: 639px) {
+  .about-hero { min-height: 610px; }
+  .about-hero-shade { background: linear-gradient(0deg, var(--background), color-mix(in oklab, var(--obsidian) 78%, transparent) 35%, color-mix(in oklab, var(--obsidian) 65%, transparent)); }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

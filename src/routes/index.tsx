@@ -13,6 +13,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "CyberTown Tech: Malaysian digital goods, license keys, and custom web development services. Instant delivery, secure payments." },
       { property: "og:title", content: "CyberTown Tech — Digital Goods & Web Solutions" },
       { property: "og:description", content: "Premium digital goods and web development from Malaysia." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Home,

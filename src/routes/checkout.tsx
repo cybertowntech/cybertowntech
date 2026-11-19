@@ -15,12 +15,14 @@ export const Route = createFileRoute("/checkout")({
     productId: typeof s.productId === "string" ? s.productId : "",
     variantId: typeof s.variantId === "string" && s.variantId ? s.variantId : undefined,
   }),
-  head: () => ({
-    meta: [
-      { title: "Checkout — CyberTown Tech" },
-      { name: "description", content: "Complete your CyberTown Tech purchase securely with ToyyibPay." },
-    ],
-  }),
+  head: () => ({ meta: [
+    {"title": "Checkout \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Complete your CyberTown Tech purchase with ToyyibPay."},
+    {"property": "og:title", "content": "Checkout \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Complete your CyberTown Tech purchase with ToyyibPay."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: CheckoutPage,
 });
 

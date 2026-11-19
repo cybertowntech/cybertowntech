@@ -6,6 +6,14 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { formatMYR } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/analytics")({
+  head: () => ({ meta: [
+    {"title": "Sales Analytics \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Review CyberTown Tech sales and revenue."},
+    {"property": "og:title", "content": "Sales Analytics \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Review CyberTown Tech sales and revenue."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: Analytics,
 });
 

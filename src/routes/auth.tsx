@@ -12,7 +12,14 @@ export const Route = createFileRoute("/auth")({
     mode: s.mode === "register" ? "register" : s.mode === "login" ? "login" : undefined,
     redirect: typeof s.redirect === "string" && s.redirect.startsWith("/") ? s.redirect : undefined,
   }),
-  head: () => ({ meta: [{ title: "Sign in — CyberTown Tech" }] }),
+  head: () => ({ meta: [
+    {"title": "Sign In \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Sign in or create your CyberTown Tech account."},
+    {"property": "og:title", "content": "Sign In \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Sign in or create your CyberTown Tech account."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AuthPage,
 });
 

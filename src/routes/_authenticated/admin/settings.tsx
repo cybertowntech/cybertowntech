@@ -5,6 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
+  head: () => ({ meta: [
+    {"title": "Store Settings \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech store settings."},
+    {"property": "og:title", "content": "Store Settings \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech store settings."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminSettings,
 });
 

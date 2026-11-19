@@ -9,6 +9,14 @@ import { formatMYR } from "@/lib/format";
 import { setStoredGuestEmail } from "@/hooks/useDashboardEmail";
 
 export const Route = createFileRoute("/thank-you")({
+  head: () => ({ meta: [
+    {"title": "Order Status \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Check your CyberTown Tech payment and license delivery status."},
+    {"property": "og:title", "content": "Order Status \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Check your CyberTown Tech payment and license delivery status."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   validateSearch: (s: Record<string, unknown>) => ({
     order: (s.order as string) ?? "",
     unpaid: s.unpaid === "1" || s.unpaid === 1,

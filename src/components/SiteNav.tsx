@@ -34,8 +34,9 @@ export default function SiteNav({ transparent = false }: { transparent?: boolean
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm text-ash/80">
+        <nav className="hidden md:flex items-center gap-4 lg:gap-8 text-sm text-ash/80">
           <Link to="/" className="hover:text-cream transition">Home</Link>
+          <Link to="/about" className="hover:text-cream transition">About Us</Link>
           <Link to="/products" className="hover:text-cream transition">Products</Link>
           <Link to="/cart" className="hover:text-cream transition">Cart</Link>
           <Link to="/dashboard" className="hover:text-cream transition">Dashboard</Link>
@@ -85,6 +86,7 @@ export default function SiteNav({ transparent = false }: { transparent?: boolean
         <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md">
           <nav className="max-w-7xl mx-auto px-6 py-4 flex flex-col gap-1 text-sm">
             <Link to="/" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream">Home</Link>
+            <Link to="/about" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream">About Us</Link>
             <Link to="/products" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream">Products</Link>
             <Link to="/cart" onClick={closeMobile} className="px-3 py-3 rounded-md hover:bg-muted text-cream flex items-center justify-between">
               <span>Cart</span>

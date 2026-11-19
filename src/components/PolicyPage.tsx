@@ -1,0 +1,8 @@
+import SiteNav from "@/components/SiteNav";
+import { SiteFooter } from "@/components/HomeSections";
+import { Button } from "@/components/ui/button";
+import { Mail } from "lucide-react";
+
+export function PolicyPage({ title, intro, sections }: { title: string; intro: string; sections: { title: string; text: string }[] }) {
+  return <div className="min-h-screen bg-background"><SiteNav /><main className="max-w-3xl mx-auto px-6 pt-32 pb-24"><p className="about-eyebrow">CyberTown Tech / Business information</p><h1 className="text-4xl sm:text-5xl font-semibold">{title}</h1><p className="mt-6 border-l-2 border-stone pl-5 text-sm text-stone leading-relaxed">Draft for owner review. This page is not a finalized policy; please contact us to confirm the terms applicable to your purchase.</p><p className="mt-8 text-lg text-ash leading-relaxed">{intro}</p><div className="mt-10 space-y-9">{sections.map(section => <section key={section.title}><h2 className="text-xl font-medium">{section.title}</h2><p className="mt-3 text-muted-foreground leading-relaxed">{section.text}</p></section>)}</div><div className="mt-12 pt-8 border-t border-border"><p className="text-sm text-stone mb-5">CyberTown Tech · Malaysia · Business registration 003838483-K</p><Button asChild><a href={`mailto:businesswithluc.hq@gmail.com?subject=${encodeURIComponent(title + " enquiry")}`}><Mail />Ask about this policy</a></Button></div></main><SiteFooter /></div>;
+}

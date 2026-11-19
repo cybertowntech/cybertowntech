@@ -7,6 +7,14 @@ import { useDashboardEmail } from "@/hooks/useDashboardEmail";
 import { getMyDashboard } from "@/lib/dashboard.functions";
 
 export const Route = createFileRoute("/dashboard/keys")({
+  head: () => ({ meta: [
+    {"title": "My License Keys \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Access your CyberTown Tech license keys."},
+    {"property": "og:title", "content": "My License Keys \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Access your CyberTown Tech license keys."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: KeysPage,
 });
 

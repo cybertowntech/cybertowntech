@@ -5,6 +5,14 @@ import { formatMYR, formatDate } from "@/lib/format";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
+  head: () => ({ meta: [
+    {"title": "Customer Management \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech customers."},
+    {"property": "og:title", "content": "Customer Management \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech customers."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminCustomers,
 });
 

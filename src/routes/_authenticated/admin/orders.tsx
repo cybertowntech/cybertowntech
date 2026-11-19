@@ -8,6 +8,14 @@ import { X, Ban, Trash2 } from "lucide-react";
 
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
+  head: () => ({ meta: [
+    {"title": "Order Management \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech customer orders."},
+    {"property": "og:title", "content": "Order Management \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech customer orders."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminOrders,
 });
 

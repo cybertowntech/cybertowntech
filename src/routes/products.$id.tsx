@@ -10,6 +10,14 @@ import { useCart } from "@/context/CartContext";
 import { getProductDetail } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/products/$id")({
+  head: () => ({ meta: [
+    {"title": "Product Details \u2014 CyberTown Tech"},
+    {"name": "description", "content": "View product options and availability at CyberTown Tech."},
+    {"property": "og:title", "content": "Product Details \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "View product options and availability at CyberTown Tech."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: ProductDetail,
 });
 

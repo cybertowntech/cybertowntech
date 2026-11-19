@@ -13,12 +13,14 @@ import { setStoredGuestEmail } from "@/hooks/useDashboardEmail";
 
 
 export const Route = createFileRoute("/cart")({
-  head: () => ({
-    meta: [
-      { title: "Cart — CyberTown Tech" },
-      { name: "description", content: "Review your items and check out securely." },
-    ],
-  }),
+  head: () => ({ meta: [
+    {"title": "Cart \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Review your CyberTown Tech items and checkout total."},
+    {"property": "og:title", "content": "Cart \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Review your CyberTown Tech items and checkout total."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: CartPage,
 });
 

@@ -7,6 +7,14 @@ import { Plus, Edit, Trash2, X, Search, Upload, Loader2, Image as ImageIcon } fr
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
+  head: () => ({ meta: [
+    {"title": "Product Management \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech products and variants."},
+    {"property": "og:title", "content": "Product Management \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech products and variants."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminProducts,
 });
 

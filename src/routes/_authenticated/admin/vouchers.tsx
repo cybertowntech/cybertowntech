@@ -7,6 +7,14 @@ import { Plus, Trash2, Tag } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/vouchers")({
+  head: () => ({ meta: [
+    {"title": "Voucher Management \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Manage CyberTown Tech vouchers."},
+    {"property": "og:title", "content": "Voucher Management \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Manage CyberTown Tech vouchers."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminVouchers,
 });
 

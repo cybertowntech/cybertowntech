@@ -5,6 +5,14 @@ import { formatMYR, formatDateTime } from "@/lib/format";
 import { DollarSign, ShoppingBag, Users, AlertTriangle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
+  head: () => ({ meta: [
+    {"title": "Admin Overview \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Review CyberTown Tech store activity."},
+    {"property": "og:title", "content": "Admin Overview \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Review CyberTown Tech store activity."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: AdminOverview,
 });
 

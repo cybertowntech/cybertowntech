@@ -2,6 +2,7 @@ import { motion, useInView, useMotionValue, useSpring, useTransform } from "fram
 import { useEffect, useRef } from "react";
 import { Code2, Palette, Package, Wrench, ShieldCheck, Zap, Globe2, ArrowRight } from "lucide-react";
 import mascot from "@/assets/mascot.jpg";
+import { Link } from "@tanstack/react-router";
 
 const services = [
   { icon: Code2, title: "Web Development", desc: "Custom websites, web apps, and full-stack builds with modern stacks." },
@@ -241,10 +242,11 @@ export function SiteFooter() {
     <footer className="border-t border-border/60 py-12 px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
         <div className="font-mono">© {new Date().getFullYear()} CyberTown Tech · Made in Malaysia 🇲🇾</div>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-cream transition">Privacy</a>
-          <a href="#" className="hover:text-cream transition">Terms</a>
-          <a href="#" className="hover:text-cream transition">Refunds</a>
+        <div className="flex flex-wrap justify-center gap-6">
+          <Link to="/about" className="hover:text-cream transition">About Us</Link>
+          <Link to="/privacy" className="hover:text-cream transition">Privacy</Link>
+          <Link to="/terms" className="hover:text-cream transition">Terms</Link>
+          <Link to="/refunds" className="hover:text-cream transition">Refunds</Link>
         </div>
       </div>
     </footer>

@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
@@ -30,14 +31,14 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   const router = useRouter();
   useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold">Something broke</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{error instanceof Error ? error.message : "An unexpected error occurred."}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-cream px-4 py-2 text-sm text-obsidian hover:bg-ash">Try again</button>
           <a href="/" className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted">Go home</a>
@@ -54,15 +55,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "CyberTown Tech" },
       { name: "description", content: "Digital goods and web development services from Malaysia." },
-      { name: "author", content: "CyberTown Store" },
+      { name: "author", content: "CyberTown Tech" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "CyberTown Store" },
+      { property: "og:site_name", content: "CyberTown Tech" },
       { property: "og:title", content: "CyberTown Tech" },
       { name: "twitter:title", content: "CyberTown Tech" },
       { property: "og:description", content: "Digital goods and web development services from Malaysia." },
       { name: "twitter:description", content: "Digital goods and web development services from Malaysia." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/a44Kqh7Br7gPyofnpZ91PbvxTD43/social-images/social-1780619584491-6055398009392009074.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/a44Kqh7Br7gPyofnpZ91PbvxTD43/social-images/social-1780619584491-6055398009392009074.webp" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

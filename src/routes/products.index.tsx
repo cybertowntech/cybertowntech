@@ -8,12 +8,14 @@ import { formatMYR } from "@/lib/format";
 import { listActiveProducts } from "@/lib/products.functions";
 
 export const Route = createFileRoute("/products/")({
-  head: () => ({
-    meta: [
-      { title: "Products — CyberTown Tech" },
-      { name: "description", content: "Browse digital goods and web development services from CyberTown Tech Malaysia." },
-    ],
-  }),
+  head: () => ({ meta: [
+    {"title": "Products \u2014 CyberTown Tech"},
+    {"name": "description", "content": "Browse digital goods and web development services from CyberTown Tech Malaysia."},
+    {"property": "og:title", "content": "Products \u2014 CyberTown Tech"},
+    {"property": "og:description", "content": "Browse digital goods and web development services from CyberTown Tech Malaysia."},
+    {"property": "og:type", "content": "website"},
+    {"name": "twitter:card", "content": "summary"},
+  ] }),
   component: ProductsPage,
 });
 
