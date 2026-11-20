@@ -1,7 +1,9 @@
 import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useRef } from "react";
-import { Code2, Palette, Package, Wrench, ShieldCheck, Zap, Globe2, ArrowRight } from "lucide-react";
+import { Code2, Palette, Package, Wrench, ShieldCheck, Zap, Globe2, ArrowRight, MessageCircle, Mail } from "lucide-react";
 import mascot from "@/assets/mascot.jpg";
+import { Button } from "@/components/ui/button";
+import { whatsappUrl, WHATSAPP_NUMBER } from "@/lib/contact";
 import { Link } from "@tanstack/react-router";
 
 const services = [
@@ -61,9 +63,7 @@ export function Services() {
               </div>
               <h3 className="text-lg font-medium text-cream mb-2">{s.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-              <div className="mt-6 flex items-center gap-2 text-xs text-stone opacity-0 group-hover:opacity-100 transition">
-                Learn more <ArrowRight className="w-3 h-3" />
-              </div>
+              <Button asChild variant="link" className="mt-6 p-0 h-auto"><Link to="/about">Learn more <ArrowRight /></Link></Button>
             </motion.div>
           ))}
         </div>
@@ -77,12 +77,12 @@ export function ProductsPreview() {
     <section id="products" className="relative py-32 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 flex items-end justify-between gap-6 mb-12">
         <div>
-          <p className="text-xs tracking-[0.3em] text-stone uppercase mb-4">Featured</p>
+          <p className="text-xs text-stone uppercase mb-4">Digital possibilities · Illustrative examples</p>
           <h2 className="text-4xl md:text-6xl font-display font-semibold tracking-tight">Digital goods, delivered instantly.</h2>
         </div>
-        <a href="#" className="hidden md:inline-flex items-center gap-2 text-sm text-ash hover:text-cream transition shrink-0">
+        <Link to="/products" className="inline-flex items-center gap-2 text-sm text-ash hover:text-cream transition shrink-0">
           View all <ArrowRight className="w-4 h-4" />
-        </a>
+        </Link>
       </div>
       <div className="overflow-x-auto scrollbar-none pb-6">
         <div className="flex gap-5 px-6 min-w-max">
@@ -104,7 +104,7 @@ export function ProductsPreview() {
                 <h3 className="text-cream font-medium">{p.name}</h3>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="text-stone font-mono">{p.price}</span>
-                  <button className="text-xs px-3 h-8 rounded-md bg-cream text-obsidian font-medium hover:bg-ash transition">Buy</button>
+                  <Button asChild size="sm"><Link to="/products">Browse products <ArrowRight /></Link></Button>
                 </div>
               </div>
             </motion.article>
@@ -187,9 +187,9 @@ export function Testimonials() {
       />
       <div className="relative max-w-7xl mx-auto">
         <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
-          <p className="text-xs tracking-[0.3em] text-stone uppercase mb-4">Words from customers</p>
+          <p className="text-xs tracking-[0.3em] text-stone uppercase mb-4">Illustrative feedback · Not verified customer reviews</p>
           <h2 className="text-4xl md:text-5xl font-display font-semibold tracking-tight max-w-2xl">
-            Trusted by hundreds across Malaysia.
+            What a better experience can feel like.
           </h2>
         </motion.div>
         <div className="mt-14 grid md:grid-cols-3 gap-5">
@@ -225,12 +225,11 @@ export function ContactCTA() {
             <p className="mt-3 text-muted-foreground">Tell us what you need — we usually reply within a few hours.</p>
             <p className="mt-6 font-mono text-sm text-stone">businesswithluc.hq@gmail.com</p>
           </div>
-          <form className="space-y-3" onSubmit={(e) => e.preventDefault()}>
-            <input className="w-full h-12 px-4 rounded-lg bg-obsidian border border-border focus:border-stone outline-none text-cream placeholder:text-stone/50" placeholder="Your name" />
-            <input type="email" className="w-full h-12 px-4 rounded-lg bg-obsidian border border-border focus:border-stone outline-none text-cream placeholder:text-stone/50" placeholder="Email address" />
-            <textarea rows={4} className="w-full p-4 rounded-lg bg-obsidian border border-border focus:border-stone outline-none text-cream placeholder:text-stone/50 resize-none" placeholder="What can we help with?" />
-            <button className="w-full h-12 rounded-lg bg-cream text-obsidian font-medium hover:bg-ash transition">Send message</button>
-          </form>
+          <div className="flex flex-col items-start gap-4">
+            <Button asChild size="lg"><a href={whatsappUrl()} target="_blank" rel="noopener noreferrer"><MessageCircle />Chat on WhatsApp<ArrowRight /></a></Button>
+            <p className="text-sm text-stone">{WHATSAPP_NUMBER}</p>
+            <Button asChild variant="outline" size="lg"><a href="mailto:businesswithluc.hq@gmail.com?subject=Project%20enquiry"><Mail />Email us</a></Button>
+          </div>
         </div>
       </div>
     </section>

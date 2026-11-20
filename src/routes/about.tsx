@@ -3,6 +3,7 @@ import { ArrowRight, Code2, Palette, Package, Wrench, Globe2, Check, Mail, Messa
 import SiteNav from "@/components/SiteNav";
 import { SiteFooter } from "@/components/HomeSections";
 import { Button } from "@/components/ui/button";
+import { whatsappUrl, WHATSAPP_NUMBER } from "@/lib/contact";
 import founder from "@/assets/luqman-founder.jpeg.asset.json";
 
 export const Route = createFileRoute("/about")({
@@ -41,9 +42,9 @@ function About() {
     <SiteNav />
     <main>
       <section className="about-hero relative isolate flex items-center px-6 pt-28 pb-16 overflow-hidden">
-        <img src={founder.url} alt="Luqman Al Hakim in the mountains" className="absolute inset-0 -z-20 h-full w-full object-cover object-[50%_38%]" />
-        <div className="about-hero-shade absolute inset-0 -z-10" />
-        <div className="w-full max-w-7xl mx-auto">
+        <img src={founder.url} alt="Luqman Al Hakim in the mountains" className="absolute inset-0 z-0 h-full w-full object-cover object-[50%_38%]" />
+        <div className="about-hero-shade absolute inset-0 z-10" />
+        <div className="relative z-20 w-full max-w-7xl mx-auto">
           <p className="text-sm text-ash mb-5 font-mono">ABOUT US / EST. 2020</p>
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold max-w-3xl leading-[1.08]">CyberTown Tech</h1>
           <p className="mt-6 max-w-xl text-xl sm:text-2xl leading-relaxed text-cream">We help small builders turn big ideas into digital realities.</p>
@@ -92,7 +93,7 @@ function About() {
 
       <section className="max-w-7xl mx-auto px-6 py-20"><p className="about-eyebrow">07 / Business details</p><h2 className="about-heading">Know who you are buying from.</h2><dl className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-8"><div><dt className="text-sm text-stone">Registered business</dt><dd className="mt-3 font-medium">CyberTown Tech<br /><span className="font-mono text-sm text-ash">003838483-K</span></dd></div><div><dt className="text-sm text-stone">Country of operation</dt><dd className="mt-3 font-medium">Malaysia</dd></div><div><dt className="text-sm text-stone">Payments</dt><dd className="mt-3 font-medium">ToyyibPay</dd><dd className="mt-2 text-sm text-muted-foreground">Available methods are shown at checkout.</dd></div><div><dt className="text-sm text-stone">Policies</dt><dd className="mt-3 flex flex-col items-start gap-2"><Link to="/refunds" className="underline underline-offset-4 text-sm">Refund policy</Link><Link to="/privacy" className="underline underline-offset-4 text-sm">Privacy policy</Link><Link to="/terms" className="underline underline-offset-4 text-sm">Terms & conditions</Link></dd></div></dl></section>
 
-      <section className="border-t border-border px-6 py-20 md:py-28"><div className="max-w-7xl mx-auto"><p className="about-eyebrow">Let's talk</p><h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold">Have a project?<br /><span className="text-stone">Tell us about it.</span></h2><div className="mt-8 flex flex-wrap gap-3"><span title="Our WhatsApp contact number will be available soon."><Button size="lg" disabled><MessageCircle />WhatsApp · Coming soon</Button></span><Button asChild size="lg" variant="outline"><a href="mailto:businesswithluc.hq@gmail.com?subject=Project%20enquiry"><Mail />Email us<ArrowUpRight /></a></Button></div><p className="mt-5 text-sm text-stone break-all">businesswithluc.hq@gmail.com</p></div></section>
+      <section className="border-t border-border px-6 py-20 md:py-28"><div className="max-w-7xl mx-auto"><p className="about-eyebrow">Let's talk</p><h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold">Have a project?<br /><span className="text-stone">Tell us about it.</span></h2><div className="mt-8 flex flex-wrap gap-3"><Button asChild size="lg"><a href={whatsappUrl()} target="_blank" rel="noopener noreferrer"><MessageCircle />Chat on WhatsApp<ArrowUpRight /></a></Button><Button asChild size="lg" variant="outline"><a href="mailto:businesswithluc.hq@gmail.com?subject=Project%20enquiry"><Mail />Email us<ArrowUpRight /></a></Button></div><p className="mt-5 text-sm text-stone break-all">{WHATSAPP_NUMBER} · businesswithluc.hq@gmail.com</p></div></section>
     </main>
     <SiteFooter />
   </div>;
