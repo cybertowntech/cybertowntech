@@ -132,7 +132,7 @@ function CartPage() {
                 return (
                   <div key={key} className="flex gap-4 p-4 rounded-2xl bg-card border border-border">
                     <div className="w-20 h-20 shrink-0 rounded-lg bg-gradient-to-br from-charcoal to-obsidian overflow-hidden flex items-center justify-center">
-                      {i.thumbnail_url ? <img src={i.thumbnail_url} alt={i.name} className="w-full h-full object-cover" /> : <Package className="w-8 h-8 text-stone/40" />}
+                      {i.thumbnail_url ? <img src={i.thumbnail_url} alt={i.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} /> : <Package className="w-8 h-8 text-stone/40" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] uppercase tracking-widest text-stone">{i.type}</div>
