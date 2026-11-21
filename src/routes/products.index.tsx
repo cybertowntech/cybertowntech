@@ -6,6 +6,7 @@ import { Search, Package } from "lucide-react";
 import SiteNav from "@/components/SiteNav";
 import { formatMYR } from "@/lib/format";
 import { listActiveProducts } from "@/lib/products.functions";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/products/")({
   head: () => ({ meta: [
@@ -85,13 +86,7 @@ function ProductsPage() {
             <motion.div key={p.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
               <Link to="/products/$id" params={{ id: p.id }} className="block group rounded-2xl bg-card border border-border hover:border-stone/60 transition overflow-hidden">
                 <div className="aspect-[4/3] bg-gradient-to-br from-charcoal to-obsidian relative overflow-hidden">
-                  {p.thumbnail_url ? (
-                    <img src={p.thumbnail_url} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Package className="w-12 h-12 text-stone/40" />
-                    </div>
-                  )}
+                  <ProductImage src={p.thumbnail_url} alt={p.name} className="group-hover:scale-105 transition duration-700" />
                   <div className="absolute top-3 right-3 px-2 py-1 rounded text-[10px] uppercase tracking-wider bg-obsidian/70 backdrop-blur text-stone">{p.type}</div>
                 </div>
                 <div className="p-5">

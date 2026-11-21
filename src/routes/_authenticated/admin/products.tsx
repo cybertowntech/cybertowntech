@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatMYR } from "@/lib/format";
 import { Plus, Edit, Trash2, X, Search, Upload, Loader2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({ meta: [
@@ -229,7 +230,7 @@ function ThumbnailUploader({ value, onChange }: { value: string; onChange: (url:
   return (
     <div className="flex items-center gap-3">
       <div className="w-20 h-20 rounded-lg bg-obsidian border border-border overflow-hidden flex items-center justify-center shrink-0">
-        {preview ? <img src={preview} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-stone/50" />}
+        <ProductImage src={preview} alt="Product thumbnail" />
       </div>
       <div className="flex-1 space-y-2">
         <input ref={inputRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />

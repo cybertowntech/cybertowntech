@@ -8,6 +8,7 @@ import { formatMYR } from "@/lib/format";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
 import { getProductDetail } from "@/lib/products.functions";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/products/$id")({
   head: () => ({ meta: [
@@ -80,13 +81,7 @@ function ProductDetail() {
         </Link>
         <div className="grid md:grid-cols-2 gap-12">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="aspect-square rounded-2xl bg-card border border-border overflow-hidden relative">
-            {product.thumbnail_url ? (
-              <img src={product.thumbnail_url} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-charcoal to-obsidian">
-                <Package className="w-20 h-20 text-stone/30" />
-              </div>
-            )}
+            <ProductImage src={product.thumbnail_url} alt={product.name} />
             <div className="absolute top-4 right-4 px-3 py-1 rounded-full text-[10px] uppercase tracking-wider bg-obsidian/70 backdrop-blur text-stone">{product.type}</div>
           </motion.div>
 

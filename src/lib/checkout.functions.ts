@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { allocateCartDiscount } from "@/lib/cart-pricing";
 
 const CheckoutInput = z.object({
   productId: z.string().uuid(),
@@ -222,7 +223,6 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     }
 
     const subtotal = lines.reduce((s, l) => s + l.amount, 0);
-    if (subtotal <= 0) return { error: "Cart total must be greater than zero" };
 
     // Voucher
     let discount = 0;
@@ -259,14 +259,16 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     if (!email) return { error: "Email is required to check out" };
 
     // Spread the discount proportionally across line items so each order row sums to `total`
-    const perItemDiscount = lines.map((l) => (subtotal > 0 ? (l.amount / subtotal) * discount : 0));
+    const allocations = allocateCartDiscount(lines.map((line) => line.amount), discount);
     const insertRows = lines.map((l, idx) => {
-      const d = Math.round(perItemDiscount[idx] * 100) / 100;
+      const allocation = allocations[idx];
+      if (!allocation) throw new Error("Missing cart price allocation");
+      const d = allocation.discount;
       return {
         user_id: userId,
         product_id: l.product.id,
         variant_id: l.variant?.id ?? null,
-        amount: Math.max(0, Math.round((l.amount - d) * 100) / 100),
+        amount: allocation.amount,
         status: "pending" as const,
         customer_email: email,
         customer_name: name,
@@ -281,12 +283,15 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     if (oErr || !orders || orders.length === 0) return { error: oErr?.message ?? "Failed to create orders" };
 
     const primary = orders[0];
+    if (!primary) return { error: "Failed to create orders" };
     const emailParam = encodeURIComponent(email);
 
     // ---------- Free checkout path (total = RM0). Skip ToyyibPay entirely,
     // fulfill immediately, and go straight to the thank-you page. ----------
     if (total <= 0) {
       for (const order of orders) {
+        const productId = order.product_id;
+        if (!productId) return { error: "Order product is unavailable" };
         await supabaseAdmin.from("orders").update({
           status: "paid",
           paid_at: new Date().toISOString(),
@@ -294,11 +299,11 @@ export const createCartCheckout = createServerFn({ method: "POST" })
 
         // Assign a license key for digital products
         const { data: product } = await supabaseAdmin
-          .from("products").select("type").eq("id", order.product_id!).maybeSingle();
+          .from("products").select("type").eq("id", productId).maybeSingle();
         if (product?.type === "digital") {
           let kq = supabaseAdmin
             .from("license_keys").select("id")
-            .eq("product_id", order.product_id!).eq("status", "available");
+            .eq("product_id", productId).eq("status", "available");
           kq = order.variant_id ? kq.eq("variant_id", order.variant_id) : kq.is("variant_id", null);
           const { data: keys } = await kq.limit(1);
           const keyId = keys?.[0]?.id;
@@ -336,7 +341,7 @@ export const createCartCheckout = createServerFn({ method: "POST" })
     const base = cfg.sandbox ? "https://dev.toyyibpay.com" : "https://toyyibpay.com";
     const externalRef = orders.map((o) => o.id).join(",").slice(0, 250);
 
-    const billName = (lines.length === 1 ? lines[0].product.name : `Cart (${lines.length} items)`).slice(0, 30);
+    const billName = (lines.length === 1 ? lines[0]?.product.name ?? "Cart" : `Cart (${lines.length} items)`).slice(0, 30);
     const billDesc = lines.map((l) => l.product.name).join(", ").slice(0, 100);
 
     const form = new URLSearchParams({

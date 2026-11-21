@@ -10,6 +10,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { createCartCheckout } from "@/lib/checkout.functions";
 import { validateVoucher } from "@/lib/vouchers.functions";
 import { setStoredGuestEmail } from "@/hooks/useDashboardEmail";
+import { useQuery } from "@tanstack/react-query";
+import { listActiveProducts } from "@/lib/products.functions";
+import { ProductImage } from "@/components/ProductImage";
+import { Button } from "@/components/ui/button";
 
 
 export const Route = createFileRoute("/cart")({
@@ -27,6 +31,12 @@ export const Route = createFileRoute("/cart")({
 function CartPage() {
   const { items, remove, count } = useCart();
   const { user, loading } = useAuth();
+  const { data: catalog } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => listActiveProducts(),
+    enabled: items.length > 0,
+    staleTime: 0,
+  });
   
   const [busy, setBusy] = useState(false);
 
@@ -76,7 +86,7 @@ function CartPage() {
       : null;
     if (!user) {
       if (!showGuestForm) { setShowGuestForm(true); return; }
-      if (!guest!.email || !guest!.name || guest!.phone.length < 8) {
+      if (!guest?.email || !guest.name || guest.phone.length < 8) {
         toast.error("Please complete your details to continue as guest");
         return;
       }
@@ -132,7 +142,7 @@ function CartPage() {
                 return (
                   <div key={key} className="flex gap-4 p-4 rounded-2xl bg-card border border-border">
                     <div className="w-20 h-20 shrink-0 rounded-lg bg-gradient-to-br from-charcoal to-obsidian overflow-hidden flex items-center justify-center">
-                      {i.thumbnail_url ? <img src={i.thumbnail_url} alt={i.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} /> : <Package className="w-8 h-8 text-stone/40" />}
+                      <ProductImage src={catalog ? catalog.find((p) => p.id === i.productId)?.thumbnail_url : i.thumbnail_url} alt={i.name} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-[10px] uppercase tracking-widest text-stone">{i.type}</div>
@@ -140,9 +150,9 @@ function CartPage() {
                       {i.variantName && <p className="text-xs text-muted-foreground">{i.variantName}</p>}
                       <div className="mt-2 flex items-center justify-between gap-3">
                         <span className="font-mono text-stone">{formatMYR(i.price)}</span>
-                        <button onClick={() => remove(i.productId, i.variantId)} className="h-9 w-9 inline-flex items-center justify-center rounded-md border border-border hover:border-destructive hover:text-destructive transition">
+                        <Button variant="outline" size="icon" aria-label={`Remove ${i.name}`} title={`Remove ${i.name}`} onClick={() => remove(i.productId, i.variantId)} className="hover:border-destructive hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -179,7 +189,7 @@ function CartPage() {
                       value={voucherInput}
                       onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
                       placeholder="Voucher code"
-                      className="flex-1 h-10 px-3 rounded-lg bg-obsidian border border-border focus:border-stone outline-none text-sm uppercase tracking-wider"
+                      className="min-w-0 flex-1 h-10 px-3 rounded-lg bg-obsidian border border-border focus:border-stone outline-none text-sm uppercase tracking-wider"
                     />
                     <button
                       onClick={applyVoucher}

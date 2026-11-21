@@ -9,6 +9,7 @@ import { formatMYR } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { getProductDetail } from "@/lib/products.functions";
+import { ProductImage } from "@/components/ProductImage";
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (s: Record<string, unknown>): { productId: string; variantId?: string } => ({
@@ -115,11 +116,7 @@ function CheckoutPage() {
             <section className="rounded-2xl border border-border bg-card p-5">
               <div className="flex gap-5">
                 <div className="w-24 h-24 shrink-0 rounded-lg bg-gradient-to-br from-charcoal to-obsidian overflow-hidden flex items-center justify-center">
-                  {data.product.thumbnail_url ? (
-                    <img src={data.product.thumbnail_url} alt={data.product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Package className="w-9 h-9 text-stone/40" />
-                  )}
+                  <ProductImage src={data.product.thumbnail_url} alt={data.product.name} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-[10px] uppercase tracking-widest text-stone">{data.product.type}</div>
