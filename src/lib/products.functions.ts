@@ -6,6 +6,21 @@ const ProductDetailInput = z.object({
   variantId: z.string().uuid().optional().nullable(),
 });
 
+const BUCKET_MARKER = "/product-thumbnails/";
+async function signThumb<T extends { thumbnail_url: string | null }>(admin: any, rows: T[]): Promise<T[]> {
+  const paths = rows.map((r) => {
+    const u = r.thumbnail_url;
+    if (!u || !u.includes(BUCKET_MARKER)) return null;
+    return decodeURIComponent(u.split(BUCKET_MARKER)[1]!.split("?")[0]!);
+  });
+  const wanted = paths.filter((x): x is string => !!x);
+  if (!wanted.length) return rows;
+  const { data } = await admin.storage.from("product-thumbnails").createSignedUrls(wanted, 60 * 60 * 24 * 7);
+  const map = new Map<string, string>();
+  for (const d of data ?? []) if (d.path && d.signedUrl) map.set(d.path, d.signedUrl);
+  return rows.map((r, i) => (paths[i] && map.has(paths[i]!) ? { ...r, thumbnail_url: map.get(paths[i]!)! } : r));
+}
+
 export const listActiveProducts = createServerFn({ method: "GET" }).handler(async () => {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
@@ -14,7 +29,7 @@ export const listActiveProducts = createServerFn({ method: "GET" }).handler(asyn
     .eq("status", true)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return data ?? [];
+  return signThumb(supabaseAdmin, data ?? []);
 });
 
 export const getProductDetail = createServerFn({ method: "GET" })
@@ -46,5 +61,6 @@ export const getProductDetail = createServerFn({ method: "GET" })
     const { count } = await kq;
 
     const selectedVariant = data.variantId ? (variants ?? []).find((v) => v.id === data.variantId) ?? null : null;
-    return { product, variants: variants ?? [], availableKeys: count ?? 0, selectedVariant };
+    const [signedProduct] = await signThumb(supabaseAdmin, [product]);
+    return { product: signedProduct!, variants: variants ?? [], availableKeys: count ?? 0, selectedVariant };
   });

@@ -204,6 +204,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function ThumbnailUploader({ value, onChange }: { value: string; onChange: (url: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState(value);
+  useEffect(() => {
+    const m = "/product-thumbnails/";
+    if (!value || !value.includes(m)) { setPreview(value); return; }
+    const path = decodeURIComponent(value.split(m)[1]!.split("?")[0]!);
+    supabase.storage.from("product-thumbnails").createSignedUrl(path, 3600).then(({ data }) => setPreview(data?.signedUrl ?? value));
+  }, [value]);
 
   async function upload(file: File) {
     setBusy(true);
@@ -222,7 +229,7 @@ function ThumbnailUploader({ value, onChange }: { value: string; onChange: (url:
   return (
     <div className="flex items-center gap-3">
       <div className="w-20 h-20 rounded-lg bg-obsidian border border-border overflow-hidden flex items-center justify-center shrink-0">
-        {value ? <img src={value} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-stone/50" />}
+        {preview ? <img src={preview} alt="" className="w-full h-full object-cover" /> : <ImageIcon className="w-6 h-6 text-stone/50" />}
       </div>
       <div className="flex-1 space-y-2">
         <input ref={inputRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); }} />
